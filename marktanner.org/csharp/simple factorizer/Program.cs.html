@@ -1,0 +1,58 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> simple_factorizer
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">int</span> p = 3960;
+            List&lt;<span class="kwrd">int</span>&gt; factors = factorize(p);
+            Console.Write(<span class="str">"{0} = "</span>, p);
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; factors.Count; i++)
+            {
+                Console.Write(factors[i]);
+                Console.Write(i &lt; factors.Count - 1 ? <span class="str">", "</span> : <span class="str">"\n"</span>);
+            }
+
+            Console.Read();
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">static</span> List&lt;<span class="kwrd">int</span>&gt; factorize(<span class="kwrd">int</span> p)
+        {
+            List&lt;<span class="kwrd">int</span>&gt; factors = <span class="kwrd">new</span> List&lt;<span class="kwrd">int</span>&gt;();
+
+            <span class="kwrd">while</span>(p % 2 == 0)
+            {
+                factors.Add(2);
+                p /= 2;
+            }
+
+            <span class="rem">//casting to an int will floor the double</span>
+            <span class="kwrd">int</span> max = (<span class="kwrd">int</span>)Math.Sqrt(p);
+            <span class="kwrd">for</span>(<span class="kwrd">int</span> i = 3; i &lt; p;i += 2)
+            {
+                <span class="kwrd">while</span>(p % i == 0)
+                {
+                    factors.Add(i);
+                    p /= i;
+                    max = (<span class="kwrd">int</span>)Math.Sqrt(p);
+                }
+            }
+
+            <span class="kwrd">if</span>(p &gt; 1)
+            {
+                factors.Add(p);
+            }
+
+            <span class="kwrd">return</span> factors;
+        }
+    }
+}
+</pre></body></html>

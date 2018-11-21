@@ -1,0 +1,57 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> Emgu.CV;
+<span class="kwrd">using</span> Emgu.CV.CvEnum;
+<span class="kwrd">using</span> Emgu.CV.Structure;
+<span class="kwrd">using</span> Emgu.CV.UI;
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Drawing;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> template_matching
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">string</span> patchImagePath = <span class="str">@""</span>;
+            <span class="kwrd">string</span> fullImagePath = <span class="str">@""</span>;
+
+            Image&lt;Bgr, Byte&gt; patchImage = <span class="kwrd">new</span> Image&lt;Bgr, <span class="kwrd">byte</span>&gt;(patchImagePath);
+            Image&lt;Bgr, Byte&gt; fullImage = <span class="kwrd">new</span> Image&lt;Bgr, <span class="kwrd">byte</span>&gt;(fullImagePath);
+
+            TemplateMatchingType matchMethod = TemplateMatchingType.CcoeffNormed;
+
+            Image&lt;Gray, <span class="kwrd">float</span>&gt; imgMatch = fullImage.MatchTemplate(patchImage, matchMethod);
+
+            <span class="rem">//i have seen people wanting to normalize here, but i dont fully understand why</span>
+            CvInvoke.Normalize(imgMatch, imgMatch, 0, 1, NormType.MinMax, DepthType.Default, <span class="kwrd">new</span> Mat());
+
+            <span class="rem">//find the best match with minMax</span>
+            <span class="kwrd">double</span>[] min, max;
+            Point[] pointMin, pointMax;
+            imgMatch.MinMax(<span class="kwrd">out</span> min, <span class="kwrd">out</span> max, <span class="kwrd">out</span> pointMin, <span class="kwrd">out</span> pointMax);
+
+            Point matchLoc;
+
+            <span class="rem">//for Sqdiff and SqdiffNormed, the best matches are lower values. For all the other methods, the higher the better</span>
+            <span class="kwrd">if</span> (matchMethod == TemplateMatchingType.Sqdiff || matchMethod == TemplateMatchingType.SqdiffNormed)
+            {
+                matchLoc = pointMin[0];
+            }
+            <span class="kwrd">else</span>
+            {
+                matchLoc = pointMax[0];
+            }
+
+            <span class="rem">//draw a red box around the the match</span>
+            Rectangle region = <span class="kwrd">new</span> Rectangle(matchLoc.X, matchLoc.Y, patchImage.Width, patchImage.Height);
+            fullImage.Draw(region, <span class="kwrd">new</span> Bgr(Color.Red));
+
+            ImageViewer.Show(fullImage, <span class="str">"template matching"</span>);
+        }
+    }
+}
+</pre></body></html>

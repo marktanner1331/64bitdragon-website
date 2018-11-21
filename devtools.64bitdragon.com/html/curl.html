@@ -1,0 +1,700 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Generate cURL command line requests using this very simple and easy tool.">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>cURL Builder - Online</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0px;
+            font-size: 14px;
+        }
+
+        header h3 {
+            white-space: nowrap;
+        }
+
+        .col-md-12 div {
+            padding: 0.2em 0.5em;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        .subSection {
+            border: 1px solid black;
+            padding: 10px;
+            margin-top: 15px;
+        }
+    </style>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113657998-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-113657998-1');
+    </script>
+
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+            google_ad_client: "ca-pub-9421706488410032",
+            enable_page_level_ads: true
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        function relayout() {
+            var requestType = $("#requestType").find("input:checked").attr("id");
+
+            var rows = $("#main > .row");
+            rows.css("display", "none");
+            $("." + requestType).css("display", "");
+
+            var useAuthentication = $("#authentication")[0].checked;
+            $(".authenticationOptions").css("display", useAuthentication ? "" : "none");
+
+            if (requestType == "get" || requestType == "post") {
+                var useRangeRequest = $("#rangeRequest")[0].checked;
+                if (useRangeRequest) {
+                    $("#rangeRequestOptions").css("display", "");
+                }
+            }
+
+            if (requestType == "post" || requestType == "put") {
+                var sendData = $("#data")[0].checked;
+                
+                if (sendData) {
+                    $("#dataType").css("display", "");
+                    $("#removeExpectRow").css("display", "");
+                    $("#chunkedEncodingRow").css("display", "");
+                    $(".dataRow").css("display", "none");
+                    $("#customDataRow").css("display", "none");
+                    $("#contentTypeRow").css("display", "none");
+
+                    var dataType = $("#dataType").find("input:checked").attr("id");
+                    switch (dataType) {
+                        case "form":
+                            $("#formDataRow").css("display", "");
+                            break;
+                        case "formMultipart":
+                            $("#formMultipartRow").css("display", "");
+                            break;
+                        case "file":
+                            $("#fileDataRow").css("display", "");
+                            break;
+                        case "binaryFile":
+                            $("#binaryFileDataRow").css("display", "");
+                            break;
+                        case "json":
+                            $("#jsonDataRow").css("display", "");
+                            break;
+                        case "xml":
+                            $("#xmlDataRow").css("display", "");
+                            break;
+                        case "custom":
+                            $("#customDataRow").css("display", "");
+                            $("#contentTypeRow").css("display", "");
+                            break;
+                    }
+                } else {
+                    $("#dataType").css("display", "none");
+                    $("#removeExpectRow").css("display", "none");
+                    $("#chunkedEncodingRow").css("display", "none");
+                    $(".dataRow").css("display", "none");
+                    $("#contentTypeRow").css("display", "none");
+                }
+            }
+        }
+
+        function recreateCURL() {
+            var command = "curl";
+
+            var requestType = $("#requestType").find("input:checked").attr("id");
+
+            switch (requestType) {
+                case "head":
+                    command += " -X HEAD";
+                    break;
+                case "put":
+                    command += " -X PUT";
+                    break;
+                case "delete":
+                    command += " -x DELETE";
+                    break;
+            }
+
+            var ignoreSSL = $("#ignoreSSL")[0].checked;
+            if (ignoreSSL) {
+                command += " -k";
+            }
+
+            var followRedirects = $("#followRedirects")[0].checked;
+            if (followRedirects) {
+                command += " -L -e ';auto'";
+            }
+
+            var outputType = $("#outputType").find("input:checked").attr("id");
+            switch (outputType) {
+                case "stdout":
+                    break;
+                case "manualFile":
+                    var outputFileName = $("#outputFileName").val();
+
+                    command += " -o " + outputFileName;
+                    break;
+                case "fromURL":
+                    command += " -O";
+                    break;
+            }
+
+            var useCompression = $("#compression")[0].checked;
+            if (useCompression) {
+                command += " --compressed";
+            }
+
+            var useAuthentication = $("#authentication")[0].checked;
+            if (useAuthentication) {
+                var authenticationType = $("#authenticationType").find("input:checked").attr("id");
+                switch (authenticationType) {
+                    case "authenticationAuto":
+                        break;
+                    case "authenticationBasic":
+                        command += " --basic";
+                        break;
+                    case "authenticationDigest":
+                        command += " --digest";
+                        break;
+                    case "authenticationNegotiate":
+                        command += " --negotiate";
+                        break;
+                    case "authenticationNTLM":
+                        command += " --ntlm";
+                        break;
+                }
+
+                var username = $("#authenticationUsername").val();
+                var password = $("#authenticationPassword").val();
+
+                command += " --user " + username + ":" + password;
+            }
+
+            if (requestType == "get" || requestType == "post") {
+                var useRange = $("#rangeRequest")[0].checked;
+                if (useRange) {
+                    var range = $("#range").val();
+                    command += " --range " + range;
+                }
+            }
+
+            if (requestType == "post" || requestType == "put") {
+                var sendData = $("#data")[0].checked;
+
+                if (sendData) {
+                    var removeExpect = $("#removeExpect")[0].checked;
+                    if (removeExpect) {
+                        command += " -H \"Expect:\"";
+                    }
+
+                    var chunked = $("#chunkedEncoding")[0].checked;
+                    if (chunked) {
+                        command += " -H \"Transfer-Encoding: chunked\"";
+                    }
+
+                    var dataType = $("#dataType").find("input:checked").attr("id");
+
+                    switch (dataType) {
+                        case "form":
+                            var data = $("#formData").val();
+                            command += " --data \"" + data + "\"";
+                            break;
+                        case "formMultipart":
+                            var data = $("#formMultipartData").val();
+                            var split = data.split('&');
+
+                            for (var i = 0; i < split.length; i++) {
+                                command += " -F \"" + split[i] + "\"";
+                            }
+
+                            break;
+                        case "file":
+                            var data = $("#fileData").val();
+                            command += " --data \"@" + data + "\"";
+                            break;
+                        case "binaryFile":
+                            var data = $("#binaryFileData").val();
+                            command += " --data-binary \"@" + data + "\"";
+                            break;
+                        case "json":
+                            var data = $("#jsonData").val();
+                            data = data.replace(/\"/g, "\\\"");
+                            command += " --data \"" + data + "\" -H \"Content-Type: application/json\"";
+                            break;
+                        case "xml":
+                            var data = $("#xmlData").val();
+                            data = data.replace(/\"/g, "\\\"");
+                            command += " --data \"" + data + "\" -H \"Content-Type: application/xml\"";
+                            break;
+                        case "custom":
+                            var data = $("#customData").val();
+                            command += " --data \"" + data + "\"";
+
+                            var contentType = $("#contentType").val();
+
+                            if (contentType != "") {
+                                command += " -H \"Content-Type: " + contentType + "\"";
+                            }
+                            break;
+                    }
+                }
+            }
+
+            var url = $("#url").val();
+
+            if (/^.+:\/\//.test(url) == false) {
+                url = "http://" + url;
+            }
+
+            command += " " + url;
+
+            $("#curlCommand").val(command);
+        }
+
+        $(document).ready(function () {
+            relayout();
+            recreateCURL();
+        });
+    </script>
+</head>
+
+<body>
+    <div style="width:100%;height:50px;margin-bottom:15px;">
+        <div style="margin:auto;padding:10px;background:#dddddd;margin-bottom:15px;">
+            <a class="btn btn-default btn-md" style="" href="/" role="button">
+                Home
+            </a>
+            <div style="display:inline-block;position:absolute;left:50%;transform:translate(-50%, -15px);">
+                <header>
+                    <h3>cURL Generator</h3>
+                </header>
+            </div>
+        </div>
+    </div>
+    <div id="main" class="container">
+        <div class="subSection row get post put delete head">
+            <div class="col-xs-5">
+                <label for="url">URL:</label>
+            </div>
+            <div class="col-xs-7">
+                <input oninput="recreateCURL();" style="width:100%;border:1px solid #aaaaaa;" type="text" name="url" id="url" />
+            </div>
+        </div>
+        <div class="subSection row get post put delete head">
+            <div class="col-xs-5">
+                <label>Request Type:</label>
+            </div>
+            <div id="requestType" class="col-xs-7">
+                <input onchange="relayout();recreateCURL();" name="requestTypeCheckbox" id="get" type="radio" checked />
+                <label for="get">GET</label>
+                <br />
+                <input onchange="relayout(); recreateCURL();" name="requestTypeCheckbox" id="head" type="radio" />
+                <label for="head">HEAD</label>
+                <br />
+                <input onchange="relayout(); recreateCURL();" name="requestTypeCheckbox" id="post" type="radio" />
+                <label for="post">POST</label>
+                <br />
+                <input onchange="relayout(); recreateCURL();" name="requestTypeCheckbox" id="put" type="radio" />
+                <label for="put">PUT</label>
+                <br />
+                <input onchange="relayout(); recreateCURL();" name="requestTypeCheckbox" id="delete" type="radio" />
+                <label for="delete">DELETE</label>
+            </div>
+        </div>
+        <div class="subSection row get post">
+            <div class="col-xs-5">
+                <label>Output:</label>
+            </div>
+            <div id="outputType" class="col-xs-7">
+                <input onchange="recreateCURL();" name="output" id="stdout" type="radio" checked />
+                <label for="stdout">stdout</label>
+                <br />
+                <input onchange="recreateCURL();" name="output" id="manualFile" type="radio" />
+                <label for="manualFile">To File with name: </label>
+                <input id="outputFileName" style="border:1px solid #aaaaaa;" oninput="recreateCURL();" type="text" />
+                <br />
+                <input onchange="recreateCURL();" name="output" id="fromURL" type="radio" />
+                <label for="fromURL">To File (get name from URL)</label>
+            </div>
+        </div>
+        <div class="subSection row get post put delete head">
+            <div class="col-xs-5">
+                <label for="ignoreSSL">Ignore SSL Verification:</label>
+            </div>
+            <div class="col-xs-7">
+                <input id="ignoreSSL" name="ignoreSSL" onchange="recreateCURL();" type="checkbox" />
+            </div>
+        </div>
+        <div class="subSection row get post put delete head">
+            <div class="col-xs-5">
+                <label for="followRedirects">Follow Redirects Automatically:</label>
+            </div>
+            <div class="col-xs-7">
+                <input id="followRedirects" name="followRedirects" onchange="recreateCURL();" type="checkbox" />
+            </div>
+        </div>
+        <div class="subSection row get post">
+            <div class="col-xs-5">
+                <label for="compression">Request Compressed Response:</label>
+            </div>
+            <div class="col-xs-7">
+                <input name="compression" id="compression" onchange="recreateCURL();" type="checkbox" />
+            </div>
+        </div>
+        <div class="subSection row get post put delete head">
+            <div class="container-fluid">
+                <div class="row get post put delete head">
+                    <div class="col-xs-5">
+                        <label for="authentication">Use Authentication:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input id="authentication" name="authentication" onchange="relayout(); recreateCURL();" type="checkbox" />
+                    </div>
+                </div>
+                <div class="row authenticationOptions">
+                    <div class="col-xs-5">
+                        <label>Username:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input oninput="recreateCURL();" style="border:1px solid #aaaaaa;" id="authenticationUsername" type="text" />
+                    </div>
+                </div>
+                <div class="row authenticationOptions">
+                    <div class="col-xs-5">
+                        <label>Password:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input oninput="recreateCURL();" style="border:1px solid #aaaaaa;" id="authenticationPassword" type="text" />
+                    </div>
+                </div>
+                <div class="row authenticationOptions">
+                    <div class="col-xs-5">
+                        <label>Type:</label>
+                    </div>
+                    <div id="authenticationType" class="col-xs-7">
+                        <input onchange="recreateCURL();" name="authentication" id="authenticationAuto" type="radio" checked />
+                        <label for="authenticationAuto">Automatically Detect</label>
+                        <br />
+                        <input onchange="recreateCURL();" name="authentication" id="authenticationBasic" type="radio" />
+                        <label for="authenticationBasic">Basic</label>
+                        <br />
+                        <input onchange="recreateCURL();" name="authentication" id="authenticationDigest" type="radio" />
+                        <label for="authenticationDigest">Digest</label>
+                        <br />
+                        <input onchange="recreateCURL();" name="authentication" id="authenticationNegotiate" type="radio" />
+                        <label for="authenticationNegotiate">Negotiate (SPNEGO)</label>
+                        <br />
+                        <input onchange="recreateCURL();" name="authentication" id="authenticationNTLM" type="radio" />
+                        <label for="authenticationNTLM">NTLM</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="subSection row get post">
+            <div class="container-fluid">
+                <div class="row get post">
+                    <div class="col-xs-5">
+                        <label for="rangeRequest">Range Request:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input oninput="relayout(); recreateCURL();" name="rangeRequest" id="rangeRequest" type="checkbox" />
+                    </div>
+                </div>
+                <div id="rangeRequestOptions" class="row">
+                    <div class="col-xs-5">
+                        <label>Add Range:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input oninput="recreateCURL();" style="border:1px solid #aaaaaa;" placeholder="offset-length" type="text" id="range" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="subSection row post put">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-5">
+                        <label>Send Data:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input id="data" onchange="relayout(); recreateCURL();" type="checkbox" />
+                    </div>
+                </div>
+                <div id="dataType" class="row">
+                    <div class="col-xs-5">
+                        <label>Data Type:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input onchange="relayout();recreateCURL();" name="dataType" id="form" type="radio" checked />
+                        <label for="form">Form Data - URL Encoded</label>
+                        <br />
+                        <input onchange="relayout();recreateCURL();" name="dataType" id="formMultipart" type="radio" />
+                        <label for="formMultipart">Form Data - Multipart</label>
+                        <br />
+                        <input onchange="relayout(); recreateCURL();" name="dataType" id="file" type="radio" />
+                        <label for="file">File</label>
+                        <br />
+                        <input onchange="relayout(); recreateCURL();" name="dataType" id="binaryFile" type="radio" />
+                        <label for="binaryFile">Binary File</label>
+                        <br />
+                        <input onchange="relayout(); recreateCURL();" name="dataType" id="json" type="radio" />
+                        <label for="json">JSON</label>
+                        <br />
+                        <input onchange="relayout(); recreateCURL();" name="dataType" id="xml" type="radio" />
+                        <label for="xml">XML</label>
+                        <br />
+                        <input onchange="relayout(); recreateCURL();" name="dataType" id="custom" type="radio" />
+                        <label for="custom">Custom</label>
+                    </div>
+                </div>
+                <div id="formDataRow" class="row dataRow">
+                    <div class="col-xs-5">
+                        <label>Form Data:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <textarea placeholder="name1=value1&name2=value2" oninput="recreateCURL();" style="width:100%;border:1px solid #aaaaaa;" name="formData" id="formData"></textarea>
+                    </div>
+                </div>
+                <div id="formMultipartRow" class="row dataRow">
+                    <div class="col-xs-5">
+                        <label>Multipart Form Data:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <textarea placeholder="name1=value1&name2=value2" oninput="recreateCURL();" style="width:100%;border:1px solid #aaaaaa;" name="formMultipartData" id="formMultipartData"></textarea>
+                    </div>
+                </div>
+                <div id="fileDataRow" class="row dataRow">
+                    <div class="col-xs-5">
+                        <label>File:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input oninput="recreateCURL();" style="width:100%;border:1px solid #aaaaaa;" type="text" name="fileData" id="fileData" />
+                    </div>
+                </div>
+                <div id="binaryFileDataRow" class="row dataRow">
+                    <div class="col-xs-5">
+                        <label>Binary File:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input oninput="recreateCURL();" style="width:100%;border:1px solid #aaaaaa;" type="text" name="binaryFileData" id="binaryFileData" />
+                    </div>
+                </div>
+                <div id="jsonDataRow" class="row dataRow">
+                    <div class="col-xs-5">
+                        <label>JSON Data:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <textarea oninput="recreateCURL();" style="width:100%;border:1px solid #aaaaaa;" name="jsonData" id="jsonData"></textarea>
+                    </div>
+                </div>
+                <div id="xmlDataRow" class="row dataRow">
+                    <div class="col-xs-5">
+                        <label>XML Data:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <textarea oninput="recreateCURL();" style="width:100%;border:1px solid #aaaaaa;" name="xmlData" id="xmlData"></textarea>
+                    </div>
+                </div>
+                <div id="customDataRow" class="row dataRow">
+                    <div class="col-xs-5">
+                        <label for="customData">Custom Data:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <textarea oninput="recreateCURL();" style="width:100%;border:1px solid #aaaaaa;" name="customData" id="customData"></textarea>
+                    </div>
+                </div>
+                <div id="contentTypeRow" class="row">
+                    <div class="col-xs-5">
+                        <label for="contentType">Content Type:</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input type="text" oninput="recreateCURL();" style="width:100%;border:1px solid #aaaaaa;" name="contentType" id="contentType" />
+                    </div>
+                </div>
+                <div id="removeExpectRow" class="row">
+                    <div class="col-xs-5">
+                        <label for="removeExpect">Remove Expect 100-continue</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input id="removeExpect" onchange="relayout(); recreateCURL();" type="checkbox" />
+                    </div>
+                </div>
+                <div id="chunkedEncodingRow" class="row">
+                    <div class="col-xs-5">
+                        <label for="chunkedEncoding">Use Chunked Encoding</label>
+                    </div>
+                    <div class="col-xs-7">
+                        <input id="chunkedEncoding" onchange="relayout(); recreateCURL();" type="checkbox" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="subSection row get post put delete head">
+            <div class="col-xs-12">
+                <label>cURL Command:</label>
+                <textarea style="width:100%;border:1px solid #aaaaaa;" id="curlCommand"></textarea>
+            </div>
+        </div>
+        <div class="subSection row get post put delete head" style="margin-bottom:10px;">
+            <div class="col-md-12" style="height:100%;">
+                <headxr>
+                    <h2>
+                        cURL Commands
+                    </h2>
+                </headxr>
+                <section style="padding-bottom:50px;">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                -X
+                            </div>
+                            <div class="col-xs-9">
+                                Changes the http verb. The X parameter if followed by the verb you want to choose, e.g. '-X PUT'.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                -k
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to not validate the certificate chain when loading an SSL request.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                -L -e ';auto'
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to follow all redirects.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                -o @filename
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to output the content to the given filename.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                -O
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to output the content to a file, the filename is generated from the url.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                --compressed
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to request a compressed response from the server.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                --user username:password
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to add an authentication header to the request.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                --basic
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to use basic authentication.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                --digest
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to use digest authentication.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                --negotiate
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to use negotiate authentication.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                --ntlm
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to use ntlm authentication.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                --range start-length
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to request a given range of bytes.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                -H "Expect:"
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to remove the expect 100 continue.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                -H "Transfer-Encoding: chunked"
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to set the transfer encoding to chunked.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-3">
+                                --data ""
+                            </div>
+                            <div class="col-xs-9">
+                                Tells cURL to send the given data as form-urlencoded
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

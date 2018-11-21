@@ -1,0 +1,591 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Drawing;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> gif_parser
+{
+    <span class="kwrd">class</span> GIF : ByteArray
+    {
+        <span class="kwrd">private</span> <span class="kwrd">string</span> version;
+        <span class="kwrd">public</span> <span class="kwrd">ushort</span> width;
+        <span class="kwrd">public</span> <span class="kwrd">ushort</span> height;
+        <span class="kwrd">private</span> <span class="kwrd">bool</span> GlobalColorTableIsUsed;
+        <span class="kwrd">private</span> <span class="kwrd">byte</span> colorResolution;
+        <span class="kwrd">private</span> <span class="kwrd">bool</span> globalColorTableIsOrdered;
+        <span class="kwrd">private</span> <span class="kwrd">uint</span> globalColorTableSize; <span class="rem">// (number of entries, not size in bytes)</span>
+        <span class="kwrd">private</span> <span class="kwrd">byte</span> backgroundColorIndex;
+        <span class="kwrd">public</span> <span class="kwrd">double</span> pixelAspectRatio;
+        <span class="kwrd">private</span> Color[] globalColorTable; <span class="rem">//rgb stored as 3 bytes, (the first byte is empty)</span>
+        <span class="kwrd">public</span> <span class="kwrd">bool</span> loopAnimation = <span class="kwrd">false</span>;
+        <span class="kwrd">public</span> <span class="kwrd">ushort</span> numLoops; <span class="rem">//0 means infinite</span>
+
+        <span class="kwrd">public</span> List&lt;GIFImage&gt; images = <span class="kwrd">new</span> List&lt;GIFImage&gt;();
+
+        <span class="rem">//used for lzw</span>
+        <span class="kwrd">private</span> <span class="kwrd">byte</span>[] block;
+
+        <span class="kwrd">public</span> GIF(<span class="kwrd">byte</span>[] data) : <span class="kwrd">base</span>(data)
+        {
+            parseGIF();
+        }
+
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// parses basic data out of the gif like the width and height</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseGIF()
+        {
+            <span class="rem">//check the sig, stored in the first 6 bytes</span>
+            <span class="kwrd">string</span> sig = getString(6);
+            <span class="kwrd">switch</span>(sig)
+            {
+                <span class="kwrd">case</span> <span class="str">"GIF89a"</span>:
+                    version = <span class="str">"89a"</span>;
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> <span class="str">"GIF87a"</span>:
+                    version = <span class="str">"87a"</span>;
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">default</span>:
+                    version = <span class="str">"unknown"</span>;
+                    <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"unknown gif version: "</span> + sig);
+            }
+
+            <span class="rem">//its time to parse the logical screen descriptor</span>
+
+            <span class="rem">//get the width and height, stored in 2 bytes each</span>
+            width = getUI16();
+            height = getUI16();
+
+            <span class="rem">//now for the flags</span>
+            <span class="kwrd">byte</span> flags = getByte();
+
+            <span class="rem">//check if its using a global color table</span>
+            GlobalColorTableIsUsed = (flags &amp; 1) == 1;
+
+            <span class="rem">//calculate the color resolution</span>
+            colorResolution = 1;
+            <span class="kwrd">if</span> ((flags &gt;&gt; 1 &amp; 1) == 1) colorResolution += 1;
+            <span class="kwrd">if</span> ((flags &gt;&gt; 2 &amp; 1) == 1) colorResolution += 2;
+            <span class="kwrd">if</span> ((flags &gt;&gt; 3 &amp; 1) == 1) colorResolution += 4;
+
+            <span class="rem">//check if the global color table is ordered</span>
+            globalColorTableIsOrdered = (flags &gt;&gt; 4 &amp; 1) == 1;
+
+            <span class="rem">//finally the size of the global color table</span>
+            <span class="kwrd">byte</span> tableExponent = 1;
+            <span class="kwrd">if</span> ((flags &gt;&gt; 5 &amp; 1) == 1) tableExponent += 1;
+            <span class="kwrd">if</span> ((flags &gt;&gt; 6 &amp; 1) == 1) tableExponent += 2;
+            <span class="kwrd">if</span> ((flags &gt;&gt; 7 &amp; 1) == 1) tableExponent += 4;
+            globalColorTableSize = (<span class="kwrd">uint</span>)Math.Pow(2, (<span class="kwrd">double</span>)tableExponent);
+
+            <span class="rem">//the index of the background color in teh global color table</span>
+            backgroundColorIndex = getByte();
+
+            <span class="rem">//the aspect ratio for the pixels, will be 0 (square) in most cases.</span>
+            <span class="rem">//google pixel aspect ratio for more info</span>
+            <span class="kwrd">byte</span> aspectByte = getByte();
+            <span class="kwrd">if</span> (aspectByte == 0)
+            {
+                pixelAspectRatio = 1;
+            }
+            <span class="kwrd">else</span>
+            {
+                pixelAspectRatio = (aspectByte + 15) / 64;
+            }
+
+            <span class="rem">//its time to parse the global color table (if there is one)</span>
+            <span class="rem">//hint: if there is a global color table, individual images dont have a local color table</span>
+
+            <span class="kwrd">if</span> (GlobalColorTableIsUsed)
+            {
+                <span class="rem">//initialize the global color table</span>
+                globalColorTable = <span class="kwrd">new</span> Color[globalColorTableSize];
+
+                <span class="rem">//now we can run through the entries</span>
+                <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; globalColorTableSize; i++)
+                {
+                    globalColorTable[i] = Color.FromArgb(getByte(), getByte(), getByte());
+                }
+            }
+
+            <span class="rem">//its time to parse the image data, which are a series of blocks ending in a trailer (the 0x3b)</span>
+            <span class="kwrd">byte</span> extensionIntroducer;
+            <span class="kwrd">while</span>((extensionIntroducer = getByte()) != 0x3b)
+            {
+                <span class="rem">//the extension introducer tells us what type of byte it is</span>
+                <span class="kwrd">switch</span> (extensionIntroducer)
+                {
+                    <span class="kwrd">case</span> 0x2c: <span class="rem">//we have found an image block</span>
+                        parseImageBlock();
+                        <span class="kwrd">break</span>;
+                    <span class="kwrd">case</span> 0x21: <span class="rem">//we have found an extension block</span>
+                        <span class="rem">//there are different types of extension blocks, so the next byte contains</span>
+                        <span class="rem">//a label describing the type</span>
+                        <span class="kwrd">byte</span> label = getByte();
+                        <span class="kwrd">switch</span> (label)
+                        {
+                            <span class="kwrd">case</span> 0xf9: <span class="rem">//we have found a graphic control block</span>
+                                parseGraphicControlBlock();
+                                <span class="kwrd">break</span>;
+                            <span class="kwrd">case</span> 0xfe: <span class="rem">//we have found a comment block</span>
+                                parseCommentBlock();
+                                <span class="kwrd">break</span>;
+                            <span class="kwrd">case</span> 0x01: <span class="rem">//we have found a plain text block</span>
+                                <span class="rem">//error handling</span>
+                                <span class="kwrd">break</span>;
+                            <span class="kwrd">case</span> 0xff: <span class="rem">//we have found an application block</span>
+                                parseApplicationBlock();
+                                <span class="kwrd">break</span>;
+                            <span class="kwrd">default</span>: <span class="rem">//we have an unknown block, </span>
+                                <span class="kwrd">break</span>;
+                        }
+                        <span class="kwrd">break</span>;
+                    <span class="kwrd">default</span>: <span class="rem">//we have found an unknown block</span>
+                        <span class="rem">//error handling</span>
+                        <span class="kwrd">break</span>;
+                }
+            }
+        }
+
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// when a comment is encountered in the stream, control is passed to this method</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseCommentBlock()
+        {
+            <span class="rem">//get the size of the comment</span>
+            <span class="kwrd">byte</span> commentSize = getByte();
+
+            <span class="rem">//get the comment</span>
+            <span class="kwrd">string</span> comment = getString(commentSize);
+
+            <span class="rem">//parse the terminating character</span>
+            <span class="kwrd">if</span> (getByte() != 0x00)
+            {
+                <span class="rem">//error handling</span>
+            }
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseImageBlock()
+        {
+            GIFImage image;
+
+            <span class="rem">//image was added by graphic control extension</span>
+            <span class="kwrd">if</span> (images[images.Count() - 1].hasData == <span class="kwrd">false</span>)
+            {
+                image = images[images.Count() - 1];
+            }
+            <span class="kwrd">else</span>
+            {
+                image = <span class="kwrd">new</span> GIFImage();
+                images.Add(image);
+            }
+
+            image.hasData = <span class="kwrd">true</span>;
+
+            <span class="rem">//get the left, top, width and height of the image</span>
+            image.left = getUI16();
+            image.top = getUI16();
+            image.width = getUI16();
+            image.height = getUI16();
+
+            <span class="rem">//next is a bunch of flags used for the image</span>
+            <span class="kwrd">byte</span> flags = getByte();
+            <span class="kwrd">bool</span> hasLocalColorTable = (flags &amp; 1) == 1;
+            <span class="kwrd">bool</span> interlace = (flags &gt;&gt; 1 &amp; 1) == 1;
+            <span class="kwrd">if</span> (interlace)
+            {
+                <span class="rem">//error handling</span>
+            }
+
+            <span class="kwrd">bool</span> sort = (flags &gt;&gt; 2 &amp; 1) == 1;
+
+            <span class="rem">//might not be needed</span>
+            Color[] localColorTable = <span class="kwrd">null</span>;
+
+            <span class="rem">//get the size of the local color table</span>
+            <span class="kwrd">if</span> (hasLocalColorTable)
+            {
+                <span class="kwrd">byte</span> tableExponent = 1;
+                <span class="kwrd">if</span> ((flags &gt;&gt; 5 &amp; 1) == 1) tableExponent += 1;
+                <span class="kwrd">if</span> ((flags &gt;&gt; 6 &amp; 1) == 1) tableExponent += 2;
+                <span class="kwrd">if</span> ((flags &gt;&gt; 7 &amp; 1) == 1) tableExponent += 4;
+                <span class="kwrd">uint</span> localColorTableSize = (<span class="kwrd">uint</span>)Math.Pow(2, (<span class="kwrd">double</span>)tableExponent);
+
+                <span class="rem">//initialize the global color table</span>
+                localColorTable = <span class="kwrd">new</span> Color[localColorTableSize];
+
+                <span class="rem">//now we can run through the entries</span>
+                <span class="kwrd">for</span> (<span class="kwrd">int</span> a = 0; a &lt; localColorTableSize; a++)
+                {
+                    localColorTable[a] = Color.FromArgb(getByte(), getByte(), getByte());
+                }
+            }
+
+            <span class="rem">//decode the image and store the indices</span>
+            <span class="rem">//Adapted from John Cristy's ImageMagick.</span>
+
+            <span class="kwrd">int</span>[] tableIndices = <span class="kwrd">new</span> <span class="kwrd">int</span>[width * height];
+
+            <span class="kwrd">int</span> MaxStackSize = 4096; <span class="rem">//2^12</span>
+
+            <span class="rem">// LZW decoder working arrays</span>
+            <span class="kwrd">int</span>[] prefix;
+            <span class="kwrd">int</span>[] suffix;
+            <span class="kwrd">int</span>[] pixelStack;
+            
+            <span class="kwrd">int</span> NullCode = -1;
+            <span class="kwrd">int</span> npix = image.width * image.height;
+            <span class="kwrd">int</span> available;
+            <span class="kwrd">int</span> clear;
+            <span class="kwrd">int</span> code_mask; <span class="rem">//applied to datum to only get the bits we want </span>
+            <span class="kwrd">int</span> code_size;
+            <span class="kwrd">int</span> end_of_information;
+            <span class="kwrd">int</span> in_code;
+            <span class="kwrd">int</span> old_code; <span class="rem">//stores the code that was read before the current one</span>
+            <span class="kwrd">int</span> bits; <span class="rem">//number of bits read when reading the current code</span>
+            <span class="kwrd">int</span> code;<span class="rem">//stores the current code</span>
+            <span class="kwrd">int</span> count; <span class="rem">//stores the number of bytes left to be read in the current block</span>
+            <span class="kwrd">int</span> i;
+            <span class="kwrd">int</span> datum; <span class="rem">//stores the current code + a few extra bits (apply mask to get code)</span>
+            <span class="kwrd">int</span> data_size; <span class="rem">//initial number of bits</span>
+            <span class="kwrd">int</span> first; <span class="rem">//stores the first code in the block that was read (or the first code after a clear)</span>
+            <span class="kwrd">int</span> stackPointer; <span class="rem">//stackPointer is used to refer to the top of the pixel stack</span>
+            <span class="kwrd">int</span> bi; <span class="rem">//index of the current byte</span>
+            <span class="kwrd">int</span> pi;
+
+            prefix = <span class="kwrd">new</span> <span class="kwrd">int</span>[MaxStackSize];
+            suffix = <span class="kwrd">new</span> <span class="kwrd">int</span>[MaxStackSize];
+
+            pixelStack = <span class="kwrd">new</span> <span class="kwrd">int</span>[MaxStackSize + 1];
+
+            data_size = getByte(); <span class="rem">//get the initial number of bits</span>
+            clear = 1 &lt;&lt; data_size; <span class="rem">//same as 2^data_size</span>
+            end_of_information = clear + 1;
+            available = clear + 2; <span class="rem">//first free index in the dictionary alphabet + clear + end_of_information</span>
+            old_code = NullCode;
+            code_size = data_size + 1;
+            code_mask = (1 &lt;&lt; code_size) - 1; <span class="rem">//causes code_mask to be full of 1's. </span>
+
+            <span class="kwrd">for</span> (code = 0; code &lt; clear; code++) 
+            {
+                prefix[code] = 0;
+                
+                <span class="rem">//initialize the dictionary with the alphabet.</span>
+                suffix[code] = code;
+            }
+
+            <span class="rem">//  Decode GIF pixel stream.</span>
+            datum = bits = count = first = stackPointer = pi = bi = 0;
+
+            <span class="kwrd">for</span> (i = 0; i &lt; npix;) 
+            {
+                <span class="kwrd">if</span> (stackPointer == 0) 
+                {
+                    <span class="kwrd">if</span> (bits &lt; code_size) 
+                    {
+                        <span class="rem">//  Load bytes until there are enough bits for a code.</span>
+                        <span class="kwrd">if</span> (count == 0) 
+                        {
+                            <span class="rem">// Read a new data block.</span>
+                            count = readBlock();
+                            <span class="kwrd">if</span> (count &lt;= 0)
+                                <span class="kwrd">break</span>;
+                            bi = 0;
+                        }
+                        <span class="rem">//needed for codes with more than 8 bits</span>
+                        datum += ((<span class="kwrd">int</span>)(block[bi]) &amp; 0xff) &lt;&lt; bits;
+                        
+                        bits += 8;
+                        bi++;
+                        count--;
+                        <span class="kwrd">continue</span>;
+                    }
+                    <span class="rem">//if we have reached here, datum contains enough bits to read the code</span>
+                    
+                    <span class="rem">//  Get the next code.</span>
+                    
+                    <span class="rem">//apply the mask to datum to get only the code</span>
+                    code = datum &amp; code_mask;
+                    
+                    <span class="rem">//remove the code from datum, leaving the bits that havent been read</span>
+                    datum &gt;&gt;= code_size;
+                    
+                    <span class="rem">//reflex this change in the current bit count</span>
+                    bits -= code_size;
+                    
+                    <span class="rem">//  Interpret the code</span>
+                    <span class="kwrd">if</span> ((code &gt; available) || (code == end_of_information))
+                        <span class="kwrd">break</span>;
+                    <span class="kwrd">if</span> (code == clear) 
+                    {
+                        <span class="rem">//  Reset decoder.</span>
+                        code_size = data_size + 1;
+                        code_mask = (1 &lt;&lt; code_size) - 1;
+                        available = clear + 2;
+                        old_code = NullCode;
+                        <span class="kwrd">continue</span>;
+                    }
+                    
+                    <span class="rem">//this is true when we are reading the first byte, or if a clear is encountered</span>
+                    <span class="kwrd">if</span> (old_code == NullCode) 
+                    {
+                        <span class="rem">//get the data out of the dictionary, and add it to the pixel stack</span>
+                        pixelStack[stackPointer++] = suffix[code];
+                        
+                        <span class="rem">//set the last code and first code to this code</span>
+                        old_code = code;
+                        first = code;
+                        <span class="kwrd">continue</span>;
+                    }
+                    
+                    <span class="rem">//if its not the first code, we have hit here</span>
+                    in_code = code;
+                    
+                    <span class="rem">//if this is true, we have found a code that isnt in the dictionary</span>
+                    <span class="kwrd">if</span> (code == available) 
+                    {
+                        pixelStack[stackPointer++] = first;
+                        code = old_code;
+                    }
+                    <span class="rem">//this loop adds data to the pixel stack for multiple character dictionary entries</span>
+                    <span class="kwrd">while</span> (code &gt; clear) 
+                    {
+                        pixelStack[stackPointer++] = suffix[code];
+                        code = prefix[code];
+                    }
+                    <span class="rem">//get the least significant byte of the element in the dictionary and store it in first</span>
+                    first = (suffix[code]) &amp; 0xff;
+
+                    <span class="rem">//  Add a new string to the string table,</span>
+            
+                    <span class="kwrd">if</span> (available &gt;= MaxStackSize) <span class="kwrd">break</span>;
+                    pixelStack[stackPointer++] = first;
+                    prefix[available] = old_code;
+                    suffix[available] = first;
+                    available++;
+                    <span class="kwrd">if</span> (((available &amp; code_mask) == 0)
+                        &amp;&amp; (available &lt; MaxStackSize)) 
+                    {
+                        code_size++;
+                        code_mask += available;
+                    }
+                    old_code = in_code;
+                }
+
+                <span class="rem">//  Pop a pixel off the pixel stack.</span>
+
+                stackPointer--;
+                tableIndices[pi++] = pixelStack[stackPointer];
+                i++;
+            }
+
+            <span class="kwrd">for</span> (i = pi; i &lt; npix; i++) 
+            {
+                tableIndices[i] = 0; <span class="rem">// clear missing pixels</span>
+            }
+            
+            <span class="rem">//convert the table full of indices, to the table full of colours</span>
+            Color[] colorTableToUse = <span class="kwrd">null</span>;
+            <span class="kwrd">if</span> (hasLocalColorTable)
+            {
+                colorTableToUse = localColorTable;
+            }
+            <span class="kwrd">else</span> <span class="kwrd">if</span> (GlobalColorTableIsUsed)
+            {
+                colorTableToUse = globalColorTable;
+            }
+            <span class="kwrd">else</span>
+            {
+                <span class="rem">//error handling</span>
+            }
+
+            image.pixels = <span class="kwrd">new</span> Color[npix];
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> j = 0; j &lt; npix; j++)
+            {
+                image.pixels[j] = colorTableToUse[tableIndices[j]];
+            }
+            
+            <span class="rem">//finally we parse the termination block</span>
+            <span class="kwrd">if</span> (getByte() != 0x00)
+            {
+                <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"unexpected end of image block"</span>);
+            }
+        }
+
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// reads a block from the image data and return the size</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="rem">/// &lt;returns&gt;&lt;/returns&gt;</span>
+        <span class="kwrd">private</span> <span class="kwrd">int</span> readBlock()
+        {
+            <span class="kwrd">byte</span> blockSize = getByte();
+            <span class="kwrd">int</span> n = 0;
+            <span class="kwrd">if</span> (blockSize &gt; 0) 
+            {
+                <span class="kwrd">try</span> 
+                {
+                    <span class="kwrd">while</span> (n &lt; blockSize) 
+                    {
+                        block = getBytesAsArray((<span class="kwrd">uint</span>)(blockSize - n));
+                        <span class="kwrd">if</span> ( (blockSize - n) == -1) 
+                            <span class="kwrd">break</span>;
+                        n += (blockSize - n);
+                    }
+                } 
+                <span class="kwrd">catch</span> (Exception) 
+                {
+                }
+
+                <span class="kwrd">if</span> (n &lt; blockSize) 
+                {
+                    <span class="rem">//error handling</span>
+                }
+            }
+            <span class="kwrd">return</span> n;
+        }
+
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// when a stream encounters an image control block, control is given to this function</span>
+        <span class="rem">/// to parse it</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseGraphicControlBlock()
+        {
+            GIFImage image = <span class="kwrd">new</span> GIFImage();
+            images.Add(image);
+
+            <span class="rem">//the block size should be 0x04</span>
+            <span class="kwrd">byte</span> blockSize = getByte();
+
+            <span class="kwrd">if</span> (blockSize == 0x04)
+            {
+                <span class="rem">//several settings are stored as flags in a single byte</span>
+                <span class="kwrd">byte</span> flags = getByte();
+
+                <span class="rem">//parse the disposal method</span>
+                image.disposalMethod = 0;
+                <span class="kwrd">if</span> ((flags &gt;&gt; 3 &amp; 1) == 1) image.disposalMethod += 1;
+                <span class="kwrd">if</span> ((flags &gt;&gt; 4 &amp; 1) == 1) image.disposalMethod += 2;
+                <span class="kwrd">if</span> ((flags &gt;&gt; 5 &amp; 1) == 1) image.disposalMethod += 4;
+
+                <span class="rem">//the user input flag</span>
+                image.userInput = (flags &gt;&gt; 6 &amp; 1) == 1;
+
+                <span class="rem">//the transparency color flag</span>
+                image.transparencyColorFlag = (flags &gt;&gt; 7 &amp; 1) == 1;
+
+                <span class="rem">//next we parse the delay, stored as 1/100th's of a second</span>
+                image.delay = getUI16();
+
+                <span class="rem">//not completely sure how the transparency index works, although if the transparency color flag</span>
+                <span class="rem">//is not set, then it should be skipped</span>
+                image.transparencyIndex = getByte();
+
+                <span class="rem">//finally its the block terminator, should be 0x00</span>
+                <span class="kwrd">if</span> (getByte() != 0x00)
+                {
+                    <span class="rem">//error handling</span>
+                }
+            }
+            <span class="kwrd">else</span>
+            {
+                <span class="rem">//error handling</span>
+            }
+        }
+
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// when an application block is found in the byte stream, control is passed to this function</span>
+        <span class="rem">/// in order for it to be parsed</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseApplicationBlock()
+        {
+            <span class="rem">//the block size is always 11, if its not then something is wrong</span>
+            <span class="kwrd">byte</span> blockSize = getByte();
+            <span class="kwrd">if</span> (blockSize != 0x0b)
+            {
+                <span class="rem">//error handling</span>
+            }
+
+            <span class="rem">//next is the application identifiers, (its an 8 character string)</span>
+            <span class="kwrd">string</span> applicationID = getString(8);
+
+            <span class="rem">//i think that the authentication code is used so that only the application that</span>
+            <span class="rem">//created the extension can parse it.</span>
+            <span class="kwrd">byte</span>[] authenticationCode = getBytesAsArray(3);
+
+            <span class="rem">//as the data at this point depends on the application that created it, we can switch on the</span>
+            <span class="rem">//applicationID</span>
+            <span class="kwrd">switch</span> (applicationID)
+            {
+                <span class="kwrd">case</span> <span class="str">"NETSCAPE"</span>:
+                    parseNetscapeApplicationExtension();
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">default</span>:
+                    <span class="rem">//if i dont understand an application extension, it needs to be skipped, this</span>
+                    <span class="rem">//is a bit troublesome</span>
+                    <span class="rem">//keep going until we hit a null byte, this is hopefully the terminator</span>
+                    <span class="kwrd">while</span> (getByte() != 0x00)
+                    {
+
+                    }
+
+                    <span class="rem">//although sometimes there will be an extra null byte or other random data.</span>
+                    <span class="rem">//skip these until we find the start of a block</span>
+                    <span class="kwrd">byte</span> randomByte = getByte();
+                    <span class="kwrd">while</span> (randomByte != 0x21 &amp;&amp; randomByte != 0x2c)
+                    {
+                        randomByte = getByte();
+                    }
+
+                    <span class="rem">//now we need to go back two bytes so that the rest of the stream can be parsed properly</span>
+                    Position -= 2;
+                    trace(<span class="str">"unknown application extension block: "</span> + applicationID);
+                    <span class="kwrd">break</span>;
+            }
+
+            <span class="rem">//finally there will be a null byte which acts as a block terminator</span>
+            <span class="kwrd">byte</span> terminator = getByte();
+            <span class="kwrd">if</span> (terminator != 0x00)
+            {
+                <span class="rem">//error handling</span>
+            }
+        }
+
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// the byte stream is at a point where it needs to parse the netscape application extension</span>
+        <span class="rem">/// control is handede to this method to achieve this</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseNetscapeApplicationExtension()
+        {
+            <span class="rem">//get the sub block size, this should always be 3</span>
+            <span class="kwrd">byte</span> subBlockSize = getByte();
+            <span class="kwrd">if</span> (subBlockSize == 0x03)
+            {
+                <span class="rem">//get the sub block id</span>
+                <span class="kwrd">byte</span> subBlockID = getByte();
+                <span class="kwrd">switch</span> (subBlockID)
+                {
+                    <span class="kwrd">case</span> 0x01: <span class="rem">//we have a looping animation sub block</span>
+                        loopAnimation = <span class="kwrd">true</span>;
+                        numLoops = getUI16();
+                        <span class="kwrd">break</span>;
+                    <span class="kwrd">default</span>:
+                        <span class="rem">//error handling</span>
+                        <span class="kwrd">break</span>;
+                }
+            }
+            <span class="kwrd">else</span>
+            {
+                <span class="rem">//error handling</span>
+            }
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> trace(<span class="kwrd">object</span> message)
+        {
+            System.Diagnostics.Debug.WriteLine(message);
+        }
+    }
+}
+</pre></body></html>

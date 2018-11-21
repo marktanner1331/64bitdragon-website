@@ -1,0 +1,64 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul>
+                <li>
+                    Each element in a matrix can be uniquely referred to by its position.
+                </li>
+                <li>
+                    Each element is appended a subscript containing its row position and column position respectively.
+                    <ul>
+                        <li>
+                            For example: <code>x<sub>21</sub></code> refers to the element in row 2, column 1
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    The index of the row or column always starts at 1 (as opposed to programming where it starts at 0).
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            <div style="width:100%;text-align:center;">
+                <img style="padding:0 0 10px 10px" src="/images/matrices/matrix example 2.png" />
+            </div>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">LaTeX</div>
+<pre class="latexFullWidth">
+\begin{bmatrix}
+    x_{11}       & x_{12} & x_{13} & \dots & x_{1n} \\
+    x_{21}       & x_{22} & x_{23} & \dots & x_{2n} \\
+    \hdotsfor{5} \\
+    x_{d1}       & x_{d2} & x_{d3} & \dots & x_{dn}
+\end{bmatrix}
+</pre>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <p>In the below code we access element <code>x<sub>21</sub></code>, however we refer to it as a[1, 0] because in programming indexes start at 0, not 1.</p>
+            <pre>
+import numpy as np
+
+a = np.matrix([[3, 6, 2], [5, 1, 10]])
+
+print(a)  # prints [[ 3  6  2]
+          #         [ 5  1 10]]
+
+
+print(a[1, 0])  # prints '5'
+
+a[1, 0] = 3
+print(a[1, 0])  # prints '3'
+</pre>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Post Request - Online</title>
+    <meta charset="utf-8">
+    <meta name="description" content="Build and submit custom post requests to any url using this very simple and easy tool.">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113657998-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-113657998-1');
+    </script>
+
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+            google_ad_client: "ca-pub-9421706488410032",
+            enable_page_level_ads: true
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="/js/post-request.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            didClickRequest();
+
+            var textArea = document.getElementById("postData");
+            textArea.onpaste = function () {
+                setTimeout(function () {
+                    document.getElementById("postData").scrollTop = 0;
+                }, 50);
+            }
+
+            resize();
+        });
+        $(window).resize(resize);
+
+        function resize() {
+            var postData = $("#postData");
+            postData.css("height", ($(window).height() - postData.position().top - 190) + "px");
+
+            var responseFrame = $("#responseFrame");
+            responseFrame.css("height", ($(window).height() - responseFrame.position().top - 190) + "px");
+        }
+    </script>
+</head>
+<body>
+    <div style="width:100%;height:50px;margin-bottom:15px;">
+        <div style="margin:auto;padding:10px;background:#dddddd;margin-bottom:15px;">
+            <a class="btn btn-default btn-md" style="" href="/" role="button">
+                Home
+            </a>
+            <div style="display:inline-block;position:absolute;left:50%;transform:translate(-50%, -15px);">
+                <header><h3>Post Request</h3></header>
+            </div>
+        </div>
+    </div>
+    <div style="height:calc(100% - 65px);overflow:auto;">
+        <div class="container" style="max-width:768px;">
+            <div class="row" style="padding-bottom:15px;">
+                <div class="col-xs-6">
+                    <a id="requestButton" class="btn btn-default btn-block" onclick="didClickRequest();" role="button">
+                        Request
+                    </a>
+                </div>
+                <div class="col-xs-6">
+                    <a id="responseButton" class="btn btn-default btn-block" onclick="didClickResponse();" role="button">
+                        Response
+                    </a>
+                </div>
+            </div>
+            <div class="row" style="padding-bottom:10px;">
+                <div class="col-xs-12" style="margin-bottom:5px;">
+                    <div style="display:table;width:100%;border-spacing:5px;border-collapse:separate;">
+                        <input type="text" id="urlBox" placeholder="URL" style="width:100%;display:table-cell;padding:5px;" />
+                        <div style="display:table-cell;width:1px;" class="btn btn-primary" onclick="didClickSubmit()">Submit</div>
+                    </div>
+                </div>
+            </div>
+            <div id="postDataRow" class="row" style="height:100%">
+                <div class="col-md-12" style="padding-left:20px;padding-right:20px;height:100%">
+                    <textarea id="postData" placeholder="URL Encoded Post Data" style="width:100%;height:100%"></textarea>
+                </div>
+            </div>
+            <div style="display:table-row;width:0;height:0;">
+                <form style="display:none;" id="hiddenForm" name="hiddenForm" method="post" target="responseFrame"></form>
+            </div>
+            <div id="responseRow" class="row" style="height:100%">
+                <div class="col-md-12" style="height:100%">
+                    <iframe id="responseFrame" name="responseFrame" style="width:100%;height:100%;overflow:auto;"></iframe>
+                </div>
+            </div>
+            <div class="row" style="height:100%">
+                <div class="col-md-12" style="height:100%;">
+                    <headxr>
+                        <h2>
+                            How it works
+                        </h2>
+                    </headxr>
+                    <section style="padding-bottom:50px;">
+                        Data sent through a form-url-encoded post is formatted differently from url-encoded data. 
+                        <br />
+                        <br />
+                        This online tool will allow you to send form-url-encoded form posts to any url. Simply add the url you want to send the data to, along with the data as url encoded variables and click 'submit'.
+                        <br />
+                        <br />
+                        URL Encoded variables take the form of name1=value1&amp;name2=value2
+                        <br />
+                        <br />
+                        The request is made completely on the browser, rather than calling off to the server. This means that local urls can also be entered in the url box (such as localhost).
+                        <br />
+                        <br />
+                        It also means that no verification is neeeded to make sure it is a real request (such as captcha's).
+                        <br />
+                        <br />
+                        This is done through a hidden form being created and submitted by javascript. To get the response from the url, an iFrame is used, which the form targets. This gets around any cross domain request issues that would occur if we used an ajax request.
+                        <br />
+                        <br />
+                        Finally, if you choose not to enter a url, then a default is used, which simply shows all the data that you sent. This can be useful for debugging, as it will show not only the form post data, but also any request headers that are sent over. 
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

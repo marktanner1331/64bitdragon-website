@@ -1,0 +1,46 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Drawing;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> gif_parser
+{
+    <span class="kwrd">class</span> GIFImage
+    {
+        <span class="kwrd">public</span> <span class="kwrd">ushort</span> left;
+        <span class="kwrd">public</span> <span class="kwrd">ushort</span> top;
+        <span class="kwrd">public</span> <span class="kwrd">ushort</span> width;
+        <span class="kwrd">public</span> <span class="kwrd">ushort</span> height;
+
+        <span class="kwrd">public</span> <span class="kwrd">bool</span> hasData = <span class="kwrd">false</span>;
+
+        <span class="kwrd">public</span> Color[] pixels;
+
+        <span class="kwrd">public</span> <span class="kwrd">int</span> disposalMethod;
+        <span class="kwrd">public</span> <span class="kwrd">bool</span> userInput;
+        <span class="kwrd">public</span> <span class="kwrd">bool</span> transparencyColorFlag;
+        <span class="kwrd">public</span> <span class="kwrd">ushort</span> delay;
+        <span class="kwrd">public</span> <span class="kwrd">byte</span> transparencyIndex;
+
+        <span class="kwrd">public</span> Image toImage()
+        {
+            Bitmap bitmap = <span class="kwrd">new</span> Bitmap(width, height);
+
+            <span class="kwrd">int</span> k = 0;
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> j = 0; j &lt; height; j++)
+            {
+                <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; width; i++)
+                {
+                    bitmap.SetPixel(i, j, pixels[k]);
+                    k++;
+                }
+            }
+
+            <span class="kwrd">return</span> (Image)bitmap;
+        }
+    }
+}
+</pre></body></html>

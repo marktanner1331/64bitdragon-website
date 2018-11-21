@@ -1,0 +1,3 @@
+<meta name="description" content="Durer projection algorithm in c#">
+<meta name="keywords" content="c# durer 3d engine source code">
+<meta name="author" content="Mark Tanner">

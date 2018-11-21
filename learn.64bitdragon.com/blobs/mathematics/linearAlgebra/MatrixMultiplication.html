@@ -1,0 +1,85 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul>
+                <li>
+                    Matrix Multiplication, or matrix product, is a method of multiplying two matrices to produce a third matrix.
+                </li>
+                <li>
+                    Two matrices can only be multiplied together if the number of rows in the first matrix is equal to the number of columns in the second matrix.
+                </li>
+                <li>
+                    The result will be a matrix with the number of columns from the first matrix and the number of rows from the second matrix.
+                    <ul>
+                        <li>
+                            <strong>A</strong> is a i x j matrix
+                        </li>
+                        <li>
+                            <strong>B</strong> is a j x k matrix
+                        </li>
+                        <li>
+                            <strong>C</strong> = <strong>AB</strong>
+                        </li>
+                        <li>
+                            <strong>C</strong> is a i x k matrix
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    The values in the resulting matrix are calculated by finding the dot product, using the row from the first matrix and the column from the second:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/matrices/matrix multiplication.png" />
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            Find the result of multiplying the following two matrices:
+            <div style="width:100%;text-align:center;">
+                <img style="padding:10px 0 10px 10px" src="/images/matrices/matrix multiplication 3.png" />
+            </div>
+            <br />
+            <strong>Solution</strong>
+            <ol>
+                <li>
+                    First we position them to make it easier to see which vectors need to be multiplied:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/matrices/matrix multiplication 4.png" />
+                    </div>
+                    <br />
+                </li>
+                <li>
+                    Then we write the dot product of the corresponding vectors:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/matrices/matrix multiplication 2.png" />
+                    </div>
+                    <br />
+                </li>
+                <li>
+                    And finally solve:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/matrices/matrix multiplication 5.png" />
+                    </div>
+                </li>
+            </ol>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+import numpy as np
+
+a = [[1, 4], [3, 7], [8, 4]]
+b = [[3, 6, 2], [5, 1, 10]]
+
+c = np.matmul(a, b)
+print(c)
+</pre>
+        </section>
+    </div>
+</div>

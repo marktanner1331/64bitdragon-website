@@ -1,0 +1,72 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> sieve_of_Eratosthenes
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            List&lt;<span class="kwrd">int</span>&gt; primes = generatePrimesUpTo(100);
+
+            Console.WriteLine(<span class="str">"primes between 0 and {0}"</span>, 100);
+
+            <span class="kwrd">foreach</span> (<span class="kwrd">int</span> prime <span class="kwrd">in</span> primes)
+            {
+                Console.WriteLine(prime);
+            }
+
+            Console.Read();
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">static</span> List&lt;<span class="kwrd">int</span>&gt; generatePrimesUpTo(<span class="kwrd">int</span> p)
+        {
+            <span class="rem">//if numbers[i] == true, then i is prime</span>
+            <span class="kwrd">bool</span>[] numbers = <span class="kwrd">new</span> <span class="kwrd">bool</span>[p];
+
+            <span class="rem">//pretend they are all prime</span>
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; p; i++)
+            {
+                numbers[i] = <span class="kwrd">true</span>;
+            }
+
+            <span class="rem">//0 and 1 aren't prime</span>
+            numbers[0] = <span class="kwrd">false</span>;
+            numbers[1] = <span class="kwrd">false</span>;
+
+            <span class="kwrd">int</span> maxFactor = (<span class="kwrd">int</span>)Math.Sqrt(p);
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; maxFactor; i++)
+            {
+                <span class="rem">//if i isnt prime, then multiples of i's factors will have already</span>
+                <span class="rem">//handled the multiples of i</span>
+                <span class="kwrd">if</span> (numbers[i] == <span class="kwrd">false</span>)
+                {
+                    <span class="kwrd">continue</span>;
+                }
+
+                <span class="rem">//go through all the multiples of i, and set them to composite (e.g. non prime)</span>
+                <span class="kwrd">for</span> (<span class="kwrd">int</span> a = 2; a * i &lt; p; a++)
+                {
+                    numbers[a * i] = <span class="kwrd">false</span>;
+                }
+            }
+
+            <span class="rem">//make a list out of all the primes</span>
+            List&lt;<span class="kwrd">int</span>&gt; primes = <span class="kwrd">new</span> List&lt;<span class="kwrd">int</span>&gt;();
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; p; i++)
+            {
+                <span class="kwrd">if</span> (numbers[i] == <span class="kwrd">true</span>)
+                {
+                    primes.Add(i);
+                }
+            }
+
+            <span class="kwrd">return</span> primes;
+        }
+    }
+}
+</pre></body></html>

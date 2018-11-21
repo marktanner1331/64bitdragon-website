@@ -1,0 +1,23 @@
+﻿classification problems aim to make a model that partitions data into groups (called classes)
+e.g. classifying birds will mean that each species is its own class
+
+a classification that has only two classes (true/false) is called a two class problem
+a classification that has multiple classes is called a multi class problem
+
+this is all discrete data, the class can be represented by a label, the datum can be given only one of a finite set of labels
+
+however the model can split out continuous data
+it can return a set of labels and probabilities, each probability describing the chance of the datum being part of that class
+e.g. 
+bluebird 50%
+blackbird 1%
+dove 10%
+
+this can be converted into discrete data by choosing the label with the highest probability
+
+we can measure the accuracy of a predictive model differently to that of a regression model, for that we can use mathematical techniques (such is mae)
+
+we measure by calculating the percentage of correct classifications
+
+accuracy = (correctPredictions / totalPredictions) * 100
+

@@ -1,0 +1,34 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> euclids_algorithm
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">int</span> a = 639;
+            <span class="kwrd">int</span> b = 2343;
+
+            Console.WriteLine(<span class="str">"gcd({0}, {1}) == {2}"</span>, a, b, gcd(a, b));
+            Console.Read();
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">int</span> gcd(<span class="kwrd">int</span> a, <span class="kwrd">int</span> b)
+        {
+            <span class="kwrd">while</span>(b != 0)
+            {
+                <span class="kwrd">int</span> r = a % b;
+                a = b;
+                b = r;
+            }
+
+            <span class="kwrd">return</span> a;
+        }
+    }
+}
+</pre></body></html>

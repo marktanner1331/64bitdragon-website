@@ -1,0 +1,171 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    We are used to operations that can be applied to numbers (integers and floats), such as:
+                    <ul>
+                        <li>
+                            Addition
+                        </li>
+                        <li>
+                            Subtraction
+                        </li>
+                        <li>
+                            Multiplication
+                        </li>
+                        <li>
+                            Division
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    And also operations that can be applied to strings, such as:
+                    <ul>
+                        <li>
+                            subString()
+                        </li>
+                        <li>
+                            append()
+                        </li>
+                        <li>
+                            split()
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    However there is another class of operations which can be applied directly to bits, we will cover 3 of them here:
+                    <ul>
+                        <li>
+                            AND
+                        </li>
+                        <li>
+                            OR
+                        </li>
+                        <li>
+                            XOR
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    It should also be noted, that although the bitwise operations are defined for single bits, they are applied to larger data types (such as integers). When a bitwise operation is applied to an integer, it is applied to each bit individually.
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">AND</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    the AND operator is a binary operator, it operates on two parameters of equal length (in bits).
+                </li>
+                <li>
+                    IF <b>c</b> = <b>a</b> AND <b>b</b>, then <b>c</b> == 1 if and only if <b>a</b> == 1 and <b>b</b> == 1.
+                </li>
+                <li>
+                    Example:
+                    <pre>
+a = 0011
+b = 1010
+c = 0010
+</pre>
+                </li>
+                <li>
+                    Code:
+                    <pre>
+def print_bits(i):
+    print(bin(i)[2:].zfill(4))
+
+
+a = int('0011', 2)
+print_bits(a)
+
+b = int('1010', 2)
+print_bits(b)
+
+print_bits(a & b)
+</pre>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">OR</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    the OR operator is a binary operator, it operates on two parameters of equal length (in bits).
+                </li>
+                <li>
+                    IF <b>c</b> = <b>a</b> OR <b>b</b>, then <b>c</b> == 0 if and only if <b>a</b> == 0 and <b>b</b> == 0.
+                </li>
+                <li>
+                    Example:
+                    <pre>
+a = 0011
+b = 1010
+c = 1011
+</pre>
+                </li>
+                <li>
+                    Code:
+                    <pre>
+def print_bits(i):
+    print(bin(i)[2:].zfill(4))
+
+
+a = int('0011', 2)
+print_bits(a)
+
+b = int('1010', 2)
+print_bits(b)
+
+print_bits(a | b)
+</pre>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">XOR</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    the XOR operator is a binary operator, it operates on two parameters of equal length (in bits).
+                </li>
+                <li>
+                    XOR is short for 'exclusive OR', it is similar to OR, however if both <b>a</b> and <b>b</b> are set to 1 then <b>c</b> is set to 0.
+                </li>
+                <li>
+                    IF <b>c</b> = <b>a</b> XOR <b>b</b>, then <b>c</b> == ! if and only if <b>a</b> OR <b>b</b> == 1 and <b>a</b> AND <b>b</b> == 0.
+                </li>
+                <li>
+                    Example:
+                    <pre>
+a = 0011
+b = 1010
+c = 1001
+</pre>
+                </li>
+                <li>
+                    Code:
+                    <pre>
+def print_bits(i):
+    print(bin(i)[2:].zfill(4))
+
+
+a = int('0011', 2)
+print_bits(a)
+
+b = int('1010', 2)
+print_bits(b)
+
+print_bits(a ^ b)
+</pre>
+                </li>
+            </ul>
+        </section>
+    </div>
+</div>

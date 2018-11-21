@@ -1,0 +1,13 @@
+﻿from sklearn.tree import DecisionTreeRegressor
+
+# Define model. Specify a number for random_state to ensure same results each run
+melbourne_model = DecisionTreeRegressor(random_state=1)
+
+# Fit model
+melbourne_model.fit(X, y)
+
+print(melbourne_model.predict(X.head()))
+
+Many machine learning models allow some randomness in model training.
+Specifying a number for random_state ensures you get the same results in each run.
+This is considered a good practice. You use any number, and model quality won't depend meaningfully on exactly what value you choose.

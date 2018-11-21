@@ -1,0 +1,90 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> Xor_encryption
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">string</span> plaintext = <span class="str">"Star Wars is an American epic space opera franchise centered on a film series created by George Lucas."</span>;
+            Console.WriteLine(plaintext);
+
+            Console.WriteLine();
+
+            <span class="kwrd">byte</span>[] key = getRandomKey();
+            <span class="kwrd">string</span> cipherText = encrypt(plaintext, key);
+
+            Console.WriteLine(cipherText);
+
+            Console.WriteLine();
+
+            plaintext = decrypt(cipherText, key);
+
+            Console.WriteLine(plaintext);
+
+            Console.Read();
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">byte</span>[] getRandomKey()
+        {
+            Random random = <span class="kwrd">new</span> Random();
+            <span class="kwrd">byte</span>[] key = <span class="kwrd">new</span> <span class="kwrd">byte</span>[16];
+
+            random.NextBytes(key);
+
+            <span class="rem">//setting the most significant bit to 0 will mean the cipher text will be valid ascii</span>
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; key.Length; i++)
+            {
+                key[i] = (<span class="kwrd">byte</span>)(key[i] &amp; 127);
+            }
+
+            <span class="kwrd">return</span> key;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">string</span> encrypt(<span class="kwrd">string</span> plaintext, <span class="kwrd">byte</span>[] key)
+        {
+            <span class="kwrd">byte</span>[] bytes = Encoding.ASCII.GetBytes(plaintext);
+            bytes = encrypt(bytes, key);
+
+            <span class="kwrd">return</span> Encoding.ASCII.GetString(bytes);
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">byte</span>[] encrypt(<span class="kwrd">byte</span>[] plaintext, <span class="kwrd">byte</span>[] key)
+        {
+            <span class="kwrd">byte</span>[] output = <span class="kwrd">new</span> <span class="kwrd">byte</span>[plaintext.Length];
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; plaintext.Length; i++)
+            {
+                output[i] = (<span class="kwrd">byte</span>)(plaintext[i] ^ key[i % key.Length]);
+            }
+
+            <span class="kwrd">return</span> output;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">string</span> decrypt(<span class="kwrd">string</span> cipherText, <span class="kwrd">byte</span>[] key)
+        {
+            <span class="kwrd">byte</span>[] bytes = Encoding.ASCII.GetBytes(cipherText);
+            bytes = decrypt(bytes, key);
+
+            <span class="kwrd">return</span> Encoding.ASCII.GetString(bytes);
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">byte</span>[] decrypt(<span class="kwrd">byte</span>[] cipherText, <span class="kwrd">byte</span>[] key)
+        {
+            <span class="kwrd">byte</span>[] output = <span class="kwrd">new</span> <span class="kwrd">byte</span>[cipherText.Length];
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; cipherText.Length; i++)
+            {
+                output[i] = (<span class="kwrd">byte</span>)(cipherText[i] ^ key[i % key.Length]);
+            }
+
+            <span class="kwrd">return</span> output;
+        }
+    }
+}
+</pre></body></html>

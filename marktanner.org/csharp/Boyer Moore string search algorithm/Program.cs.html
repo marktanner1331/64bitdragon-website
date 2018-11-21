@@ -1,0 +1,68 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> Boyer_Moore_string_search_algorithm
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">char</span>[] haystack = <span class="str">"Star Wars is an American epic space opera franchise centered on a film series created by George Lucas. The film series, consisting of two trilogies (and an upcoming third), has spawned an extensive media franchise called the Expanded Universe including books, television series, computer and video games, and comic books. These supplements to the franchise resulted in significant development of the series' fictional universe, keeping the franchise active in the 16-year interim between the two film trilogies. The franchise depicts a galaxy described as \"far, far away\" in the distant past, and commonly portrays Jedi as a representation of good, in conflict with the Sith, their evil counterpart. Their weapon of choice, the lightsaber, is commonly recognized in popular culture. The franchise's storylines contain many themes, with strong influences from philosophy and religion."</span>.ToCharArray();
+        <span class="kwrd">static</span> <span class="kwrd">char</span>[] needle = <span class="str">"the"</span>.ToCharArray();
+
+        <span class="kwrd">static</span> Dictionary&lt;<span class="kwrd">char</span>, <span class="kwrd">int</span>&gt; jumpTable;
+
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            initializeJumpTable();
+           
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = needle.Length - 1;i &lt; haystack.Length;)
+            {
+                <span class="kwrd">for</span> (<span class="kwrd">int</span> j = 0; j &lt; needle.Length; j++)
+                {
+                    <span class="kwrd">if</span> (needle[needle.Length - 1 - j] != haystack[i - j])
+                    {
+                        i += jumpTable[haystack[i - j]];
+                        <span class="kwrd">break</span>;
+                    }
+
+                    <span class="kwrd">if</span> (j == needle.Length - 1)
+                    {
+                        Console.WriteLine(<span class="str">"Found match at "</span> + (i - j));
+                        i += needle.Length - 1;
+                        <span class="kwrd">break</span>;
+                    }
+                }
+            }
+
+            Console.Read();
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">void</span> initializeJumpTable()
+        {
+            <span class="rem">//not bothering with the good jump heuristics, they are far too complicated</span>
+            jumpTable = <span class="kwrd">new</span> Dictionary&lt;<span class="kwrd">char</span>,<span class="kwrd">int</span>&gt;();
+
+             <span class="kwrd">for</span>(<span class="kwrd">int</span> i = 0;i &lt; 256;i++)
+            {
+                jumpTable[(<span class="kwrd">char</span>)i] = needle.Length;
+            }
+
+            <span class="kwrd">for</span>(<span class="kwrd">int</span> i = 0;i &lt; needle.Length;i++)
+            {
+                jumpTable[needle[i]] = needle.Length - 1 - i;
+            }
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; 256; i++)
+            {
+                <span class="kwrd">if</span> (jumpTable[(<span class="kwrd">char</span>)i] == 0)
+                {
+                    jumpTable[(<span class="kwrd">char</span>)i] = needle.Length;
+                }
+            }
+        }
+    }
+}
+</pre></body></html>

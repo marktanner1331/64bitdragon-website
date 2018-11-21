@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Count the number of words and characters of any text using this very simple and easy tool.">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Word Count - Online</title>
+
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style>
+        #outputRow {
+            text-align: right;
+        }
+    </style>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113657998-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-113657998-1');
+    </script>
+
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+            google_ad_client: "ca-pub-9421706488410032",
+            enable_page_level_ads: true
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var textArea = document.getElementById("textArea");
+            textArea.onpaste = function () {
+                setTimeout(function () {
+                    document.getElementById("textArea").scrollTop = 0;
+                }, 50);
+            }
+
+            if (textArea.addEventListener) {
+                textArea.addEventListener('input', function () {
+                    // event handling code for sane browsers
+                    count();
+                }, false);
+            } else if (textArea.attachEvent) {
+                textArea.attachEvent('onpropertychange', function () {
+                    // IE-specific event handling code
+                    count();
+                });
+            }
+
+            resize();
+        });
+        $(window).resize(resize);
+
+        function count() {
+            var text = $("#textArea").val();
+            $("#characterCount").val(text.length);
+
+            $("#wordCount").val(text.split(' ').length);
+        }
+
+        function resize() {
+            var toolCell = $("#toolCell");
+
+            toolCell.css("height", ($(window).height() - toolCell.position().top - 125) + "px");
+        }
+    </script>
+</head>
+<body>
+    <div style="width:100%;height:50px;margin-bottom:15px;">
+        <div style="margin:auto;padding:10px;background:#dddddd;margin-bottom:15px;">
+            <a class="btn btn-default btn-md" style="" href="/" role="button">
+                Home
+            </a>
+            <div style="display:inline-block;position:absolute;left:50%;transform:translate(-50%, -15px);">
+                <header><h3>Word Count</h3></header>
+            </div>
+        </div>
+    </div>
+    <div style="height:calc(100% - 65px);overflow:auto;">
+        <div class="container" style="max-width:768px;">
+            <div class="row" id="toolCell">
+                <div class="col-md-12" style="height:100%;">
+                    <textarea id="textArea" placeholder="Text or Base64 goes here." style="border:1px solid black;margin:10px;width:calc(100% - 10px);height:calc(100% - 20px);font-family:'Courier New';"></textarea>
+                </div>
+            </div>
+            <div class="row" id="outputRow">
+                <div class="col-md-12">
+                    <div>
+                        <label for="wordCount">Words:</label>
+                        <input id="wordCount" name="wordCount" type="text" value="0" />
+                    </div>
+                    <div>
+                        <label for="characterCount">Characters:</label>
+                        <input id="characterCount" name="characterCount" type="text" value="0" />
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="height:100%">
+                <div class="col-md-12" style="height:100%;">
+                    <headxr>
+                        <h2>
+                            How it works
+                        </h2>
+                    </headxr>
+                    <section style="padding-bottom:50px;">
+                        This tool counts the number of characters and words in the submitted text
+                        <br />
+                        <br />
+                        When counting the amount of characters, several different types of characters are counted.
+                        <br />
+                        These include: letters, numbers, punctuation, spaces and new lines.
+                        <br />
+                        New lines will count as two characters, as they are made of a carriage return followed by a line feed. 
+                        <br />
+                        <br />
+                        When counting words, we count the number of spaces, and then add 1. 
+                        <br />
+                        <br />
+                        The word and character counts are automatically calculated every time the input text is changed.
+                        <br />
+                        <br />
+                        This online tool for counting words and characters is completely client side and runs in the browser.
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

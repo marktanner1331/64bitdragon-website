@@ -1,0 +1,106 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.ComponentModel;
+<span class="kwrd">using</span> System.Data;
+<span class="kwrd">using</span> System.Drawing;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+<span class="kwrd">using</span> System.Windows.Forms;
+
+<span class="kwrd">namespace</span> path_smoothing_1
+{
+    <span class="kwrd">public</span> <span class="kwrd">partial</span> <span class="kwrd">class</span> Form1 : Form
+    {
+        <span class="kwrd">public</span> Form1()
+        {
+            InitializeComponent();
+
+            List&lt;PointF&gt; shape = generatePolygon();
+            translateVertices(<span class="kwrd">ref</span> shape, <span class="kwrd">new</span> PointF(5, 5));
+
+            Image canvas = (Image)<span class="kwrd">new</span> Bitmap(500, 250);
+
+            Graphics g = Graphics.FromImage(canvas);
+
+            drawClosedPolygon(shape, g);
+
+            PointF[] smoothSquareArr = <span class="kwrd">new</span> PointF[shape.Count];
+            shape.CopyTo(smoothSquareArr);
+            List&lt;PointF&gt; smoothSquare = smoothSquareArr.ToList();
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; 5; i++)
+            {
+                smoothSquare = performCornerCuttingOnClosedPolyline(<span class="kwrd">ref</span> smoothSquare);
+            }
+            
+            translateVertices(<span class="kwrd">ref</span> smoothSquare, <span class="kwrd">new</span> PointF(250, 0));
+            drawClosedPolygon(smoothSquare, g);
+            
+            pictureBox1.Image = canvas;
+        }
+
+        <span class="kwrd">private</span> List&lt;PointF&gt; performCornerCuttingOnClosedPolyline(<span class="kwrd">ref</span> List&lt;PointF&gt; vertices)
+        {
+            List&lt;PointF&gt; newVertices = <span class="kwrd">new</span> List&lt;PointF&gt;();
+
+            PointF path;
+            PointF currentPoint = vertices[0];
+
+            <span class="kwrd">for</span>(<span class="kwrd">int</span> i = 1;i &lt; vertices.Count;i++)
+            {
+                path = <span class="kwrd">new</span> PointF(vertices[i].X - currentPoint.X, vertices[i].Y - currentPoint.Y);
+                newVertices.Add(<span class="kwrd">new</span> PointF(currentPoint.X + path.X / 3, currentPoint.Y + path.Y / 3));
+                newVertices.Add(<span class="kwrd">new</span> PointF(currentPoint.X + 2 * path.X / 3, currentPoint.Y + 2 * path.Y / 3));
+
+                currentPoint = vertices[i];
+            }
+
+            <span class="rem">//for the last path that connects back to the first vertex</span>
+            path = <span class="kwrd">new</span> PointF(vertices[0].X - currentPoint.X, vertices[0].Y - currentPoint.Y);
+            newVertices.Add(<span class="kwrd">new</span> PointF(currentPoint.X + path.X / 3, currentPoint.Y + path.Y / 3));
+            newVertices.Add(<span class="kwrd">new</span> PointF(currentPoint.X + 2 * path.X / 3, currentPoint.Y + 2 * path.Y / 3));
+
+            <span class="kwrd">return</span> newVertices;
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> drawClosedPolygon(List&lt;PointF&gt; vertices, Graphics g)
+        {
+            Pen pen = <span class="kwrd">new</span> Pen(Color.Black, 2);
+            PointF currentPoint = vertices[0];
+
+            <span class="kwrd">for</span>(<span class="kwrd">int</span> i = 1;i &lt; vertices.Count;i++)
+            {
+                g.DrawLine(pen, currentPoint, vertices[i]);
+                currentPoint = vertices[i];
+            }
+
+            <span class="rem">//close the shape</span>
+            g.DrawLine(pen, currentPoint, vertices[0]);
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> translateVertices(<span class="kwrd">ref</span> List&lt;PointF&gt; vertices, PointF amount)
+        {
+            <span class="kwrd">for</span>(<span class="kwrd">int</span> i = 0;i &lt; vertices.Count;i++)
+            {
+                vertices[i] = <span class="kwrd">new</span> PointF(vertices[i].X + amount.X, vertices[i].Y + amount.Y);
+            }
+        }
+
+        <span class="kwrd">private</span> List&lt;PointF&gt; generatePolygon()
+        {
+            List&lt;PointF&gt; vertices = <span class="kwrd">new</span> List&lt;PointF&gt;();
+
+            vertices.Add(<span class="kwrd">new</span> PointF(0, 0));
+            vertices.Add(<span class="kwrd">new</span> PointF(200, 0));
+            vertices.Add(<span class="kwrd">new</span> PointF(200, 100));
+            vertices.Add(<span class="kwrd">new</span> PointF(100, 100));
+            vertices.Add(<span class="kwrd">new</span> PointF(100, 200));
+            vertices.Add(<span class="kwrd">new</span> PointF(0, 200));
+
+            <span class="kwrd">return</span> vertices;
+        }
+    }
+}
+</pre></body></html>

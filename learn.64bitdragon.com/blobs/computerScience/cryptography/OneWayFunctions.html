@@ -1,0 +1,53 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    One way functions are a special subset of functions in which it is easy to compute <span class="htmlEquation"><i>y</i></span> given <span class="htmlEquation"><i>x</i></span> but very hard to compute <span class="htmlEquation"><i>x</i></span> given <span class="htmlEquation"><i>y</i></span>
+                </li>
+                <li>
+                    For example:
+                    <div style="width:100%;text-align:center;margin-bottom:10px;">
+                        <img style="padding:10px 0 10px 10px" src="/images/cryptography/one way functions.svg" />
+                        <br />
+                        LaTeX: <code>f(x) = 7^x \mod 23</code>
+                    </div>
+                    We can calculate values for f(x) very easily:
+                    <div style="width:100%;text-align:center;margin-bottom:10px;">
+                        <img style="padding:10px 0 10px 10px" src="/images/cryptography/one way functions 2.svg" />
+                    </div>
+                    However given a specific value for <span class="htmlEquation"><i>y</i></span> it is difficult to find a corresponding <span class="htmlEquation"><i>x</i></span> without computing each possible value of <span class="htmlEquation"><i>x</i></span> and seeing if it results in a matching <span class="htmlEquation"><i>y</i></span>.
+                </li>
+            </ul>
+        </section>
+        <div class="row blobRow">
+            <section>
+                <div class="blobSubHeading">Code</div>
+                Notice in the code below, the function f() has a much smaller complexity than function g()
+                <pre>
+def f(_x):
+    return 7**_x % 23
+
+
+def g(_y):
+    for i in range(10*1000):
+        if f(i) == _y:
+            return i
+
+    raise Exception("x is not in testable domain")
+
+
+x = 8
+y = f(x)
+print("The image of " + str(x) + " is " + str(y))  # prints The image of 8 is 12
+
+y = 12
+x = g(y)
+
+print("The preimage of " + str(y) + " is " + str(x))  # prints The preimage of 12 is 8
+</pre>
+            </section>
+        </div>
+    </div>
+</div>

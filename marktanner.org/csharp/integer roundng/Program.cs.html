@@ -1,0 +1,56 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Diagnostics;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> integer_roundng
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// we have the problem "given the number X, find the multiple of Z that is closest to X.</span>
+        <span class="rem">/// in the past i would use floats, but a simpler solution is possible using nothing but integers</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 1; i &lt; 50; i++)
+            {
+                <span class="kwrd">for</span> (<span class="kwrd">int</span> j = 1; j &lt; 50; j++)
+                {
+                    <span class="kwrd">int</span> a = oldSolution(i, j);
+                    <span class="kwrd">int</span> b = newSolution(i, j);
+
+                    <span class="kwrd">if</span> (a != b)
+                    {
+                        <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"something bad happened"</span>);
+                    }
+                }
+            }
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">int</span> newSolution(<span class="kwrd">int</span> x, <span class="kwrd">int</span> z)
+        {
+            <span class="kwrd">int</span> mod = x % z;
+            <span class="kwrd">if</span> (2 * mod &lt; z)
+            {
+                <span class="kwrd">return</span> x - mod;
+            }
+            <span class="kwrd">else</span>
+            {
+                <span class="kwrd">return</span> x + z - mod;
+            }
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">int</span> oldSolution(<span class="kwrd">int</span> x, <span class="kwrd">int</span> z)
+        {
+            <span class="kwrd">double</span> a = (<span class="kwrd">double</span>)x / z;
+            a = Math.Round(a, MidpointRounding.AwayFromZero);
+
+            <span class="kwrd">return</span> (<span class="kwrd">int</span>)(a * z);
+        }
+    }
+}
+</pre></body></html>

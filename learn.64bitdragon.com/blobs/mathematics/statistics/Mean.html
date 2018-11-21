@@ -1,0 +1,52 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Definition</div>
+            The mean is a way of finding the average of a set of numbers. It is calculated by dividing the sum of the numbers by the count.
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            Find the mean of the following numbers: <span class="equation">[4, 7, 10]</span>
+            <br />
+            <br />
+            <p class="equation">
+                sum = 4 + 7 + 10 = 21
+            </p>
+            <p class="equation">
+                count = 3
+            </p>
+            <p class="equation">
+                mean = 21 / 3 = 7
+            </p>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Mathematical Definition</div>
+            <img style="padding:15px;" src="/images/equations/mean.png" />
+            <br />
+            LaTeX: <code>\overline{x} = (\frac{1}{n})\sum_{i=1}^{n}(x_{i})</code>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+<pre>
+import numpy
+
+values = [4, 7, 10]
+
+mean = numpy.average(values)
+print(mean)
+</pre>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notes</div>
+            There are other types of mean, this one is called the 'Arithmetic Mean'. It is also called the 'Mathematical Expectation' and the 'Average'.
+        </section>
+    </div>
+</div>

@@ -1,0 +1,558 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Generate cURL command line requests using this very simple and easy tool.">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>cURL Builder - Online</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0px;
+            font-size: 14px;
+        }
+
+        header h3 {
+            white-space: nowrap;
+        }
+
+        .col-md-12 div {
+            padding: 0.2em 0.5em;
+        }
+
+        td {
+            vertical-align: top;
+        }
+    </style>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113657998-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-113657998-1');
+    </script>
+
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+            google_ad_client: "ca-pub-9421706488410032",
+            enable_page_level_ads: true
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        function formMultipartAddClicked() {
+            var table = $("#httpOptions").find("#formMultipartTable");
+            var dataType = table.find("input:checked").attr("id");
+            var text = table.find("formMultipartTextbox").val();
+            
+            if(dataType == "formMultipartDataTypeFile") {
+                if(text.charAt(0) != "@") {
+                    text = "@" + text;
+                }
+            }
+        }
+
+        function relayout() {
+            var requestType = $("#httpOptions").find("#requestType").find("input:checked").attr("id");
+
+            var tableBody = $("#httpOptions").children();
+            tableBody.children().css("display", "none");
+            tableBody.find("." + requestType).css("display", "");
+
+            var useAuthentication = $("#httpOptions").find("#authentication")[0].checked;
+            $("#httpOptions").find("#authenticationOptions").css("display", useAuthentication ? "" : "none");
+
+            if (requestType == "get" || requestType == "post") {
+                var useRangeRequest = $("#httpOptions").find("#rangeRequest")[0].checked;
+                if (useRangeRequest) {
+                    $("#httpOptions").find("#rangeRequestOptions").css("display", "");
+                }
+            }
+
+            if (requestType == "post" || requestType == "put") {
+                var sendData = $("#httpOptions").find("#data")[0].checked;
+
+                if (sendData) {
+                    $("#httpOptions").find("#dataType").css("display", "");
+                    $("#httpOptions").find("#removeExpectRow").css("display", "");
+                    $("#httpOptions").find("#chunkedEncodingRow").css("display", "");
+
+                    var dataType = $("#httpOptions").find("#dataType").find("input:checked").attr("id");
+                    switch (dataType) {
+                        case "form":
+                            $("#httpOptions").find("#formDataRow").css("display", "");
+                            break;
+                        case "formMultipart":
+                            $("#httpOptions").find("#formMultipartRow").css("display", "");
+                            break;
+                        case "file":
+                            $("#httpOptions").find("#fileDataRow").css("display", "");
+                            break;
+                        case "binaryFile":
+                            $("#httpOptions").find("#binaryFileDataRow").css("display", "");
+                            break;
+                        case "json":
+                            $("#httpOptions").find("#jsonDataRow").css("display", "");
+                            break;
+                        case "xml":
+                            $("#httpOptions").find("#xmlDataRow").css("display", "");
+                            break;
+                        case "custom":
+                            $("#httpOptions").find("#customDataRow").css("display", "");
+                            $("#httpOptions").find("#contentTypeRow").css("display", "");
+                            break;
+                    }
+                }
+            }
+        }
+
+        function recreateCURL() {
+            var command = "curl";
+
+            var requestType = $("#httpOptions").find("#requestType").find("input:checked").attr("id");
+
+            var ignoreSSL = $("#httpOptions").find("#ignoreSSL")[0].checked;
+            if (ignoreSSL) {
+                command += " -k";
+            }
+
+            var followRedirects = $("#httpOptions").find("#followRedirects")[0].checked;
+            if (followRedirects) {
+                command += " -L -e ';auto'";
+            }
+
+            var outputType = $("#httpOptions").find("#outputType").find("input:checked").attr("id");
+            switch (outputType) {
+                case "stdout":
+                    break;
+                case "manualFile":
+                    var outputFileName = $("#httpOptions").find("#outputFileName").val();
+
+                    command += " -o " + outputFileName;
+                    break;
+                case "fromURL":
+                    command += " -O";
+                    break;
+            }
+
+            var useCompression = $("#httpOptions").find("#compression")[0].checked;
+            if (useCompression) {
+                command += " --compressed";
+            }
+
+            var useAuthentication = $("#httpOptions").find("#authentication")[0].checked;
+            if (useAuthentication) {
+                var authenticationType = $("#httpOptions").find("#authenticationType").find("input:checked").attr("id");
+                switch (authenticationType) {
+                    case "authenticationAuto":
+                        break;
+                    case "authenticationBasic":
+                        command += " --basic";
+                        break;
+                    case "authenticationDigest":
+                        command += " --digest";
+                        break;
+                    case "authenticationNegotiate":
+                        command += " --negotiate";
+                        break;
+                    case "authenticationNTLM":
+                        command += " --ntlm";
+                        break;
+                }
+
+                var username = $("#httpOptions").find("#authenticationUsername").val();
+                var password = $("#httpOptions").find("#authenticationPassword").val();
+
+                command += " --user " + username + ":" + password;
+            }
+
+            if (requestType == "get" || requestType == "post") {
+                var useRange = $("#httpOptions").find("#rangeRequest")[0].checked;
+                if (useRange) {
+                    var range = $("#httpOptions").find("#range").val();
+                    command += " --range " + range;
+                }
+            }
+
+            if (requestType == "post" || requestType == "put") {
+                var sendData = $("#httpOptions").find("#data")[0].checked;
+
+                if (sendData) {
+                    var removeExpect = $("#httpOptions").find("#removeExpect")[0].checked;
+                    if (removeExpect) {
+                        command += " -H Expect:";
+                    }
+
+                    var chunked = $("#httpOptions").find("#chunkedEncoding")[0].checked;
+                    if (chunked) {
+                        command += " -H \"Transfer-Encoding: chunked\"";
+                    }
+
+                    var dataType = $("#httpOptions").find("#dataType").find("input:checked").attr("id");
+
+                    switch (dataType) {
+                        case "form":
+                            var data = $("#httpOptions").find("#formData").val();
+                            command += " --data \"" + data + "\"";
+                            break;
+                        case "file":
+                            var data = $("#httpOptions").find("#fileData").val();
+                            command += " --data \"@" + data + "\"";
+                            break;
+                        case "binaryFile":
+                            var data = $("#httpOptions").find("#binaryFileData").val();
+                            command += " --data-binary \"@" + data + "\"";
+                            break;
+                        case "json":
+                            var data = $("#httpOptions").find("#jsonData").val();
+                            command += " --data \"" + data + "\" -H \"Content-Type: application/json\"";
+                            break;
+                        case "xml":
+                            var data = $("#httpOptions").find("#xmlData").val();
+                            command += " --data \"" + data + "\" -H \"Content-Type: application/xml\"";
+                            break;
+                        case "custom":
+                            var data = $("#httpOptions").find("#customData").val();
+                            command += " --data \"" + data + "\"";
+
+                            var contentType = $("#httpOptions").find("#contentType").val();
+
+                            if (contentType != "") {
+                                command += " -H \"Content-Type: " + contentType + "\"";
+                            }
+                            break;
+                    }
+                }
+            }
+
+            var url = $("#httpOptions").find("#url").val();
+            command += " " + url;
+
+            $("#curlCommand").val(command);
+        }
+
+        $(document).ready(function () {
+            relayout();
+            recreateCURL();
+        });
+    </script>
+</head>
+
+<body>
+    <div style="width:100%;height:50px;margin-bottom:15px;">
+        <div style="margin:auto;padding:10px;background:#dddddd;margin-bottom:15px;">
+            <a class="btn btn-default btn-md" style="" href="/" role="button">
+                Home
+            </a>
+            <div style="display:inline-block;position:absolute;left:50%;transform:translate(-50%, -15px);">
+                <header>
+                    <h3>cURL Generator</h3>
+                </header>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div style="display:table;width:100%;">
+                    <div id="leftContainer" style="display:table-cell;">
+                        <ul>
+                            <li>
+                                HTTP
+                            </li>
+                            <li>
+                                FTP
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="rightContainer" style="display:table-cell;width:100%;">
+                        <table id="httpOptions" style="border:1px solid black;width:100%">
+                            <tr class="get post put delete head">
+                                <td>
+                                    <label for="url">URL:</label>
+                                </td>
+                                <td>
+                                    <input oninput="recreateCURL();" style="width:100%;" type="text" name="url" id="url" />
+                                </td>
+                            </tr>
+                            <tr class="get post put delete head">
+                                <td>
+                                    <label>Request Type:</label>
+                                </td>
+                                <td id="requestType">
+                                    <input onchange="relayout();recreateCURL();" name="requestType" id="get" type="radio" checked />
+                                    <label for="get">GET</label>
+                                    <br />
+                                    <input onchange="relayout(); recreateCURL();" name="requestType" id="head" type="radio" />
+                                    <label for="head">HEAD</label>
+                                    <br />
+                                    <input onchange="relayout(); recreateCURL();" name="requestType" id="post" type="radio" />
+                                    <label for="post">POST</label>
+                                    <br />
+                                    <input onchange="relayout(); recreateCURL();" name="requestType" id="put" type="radio" />
+                                    <label for="put">PUT</label>
+                                    <br />
+                                    <input onchange="relayout(); recreateCURL();" name="requestType" id="delete" type="radio" />
+                                    <label for="delete">DELETE</label>
+                                </td>
+                            </tr>
+                            <tr class="get post">
+                                <td>
+                                    <label>Output:</label>
+                                </td>
+                                <td id="outputType">
+                                    <input onchange="recreateCURL();" name="output" id="stdout" type="radio" checked />
+                                    <label for="stdout">stdout</label>
+                                    <br />
+                                    <input onchange="recreateCURL();" name="output" id="manualFile" type="radio" />
+                                    <label for="manualFile">To File with name: </label>
+                                    <input id="outputFileName" oninput="recreateCURL();" type="text" />
+                                    <br />
+                                    <input onchange="recreateCURL();" name="output" id="fromURL" type="radio" />
+                                    <label for="fromURL">To File (get name from URL)</label>
+                                </td>
+                            </tr>
+                            <tr class="get post put delete head">
+                                <td>
+                                    <label for="ignoreSSL">Ignore SSL Verification:</label>
+                                </td>
+                                <td>
+                                    <input id="ignoreSSL" onchange="recreateCURL();" type="checkbox" />
+                                </td>
+                            </tr>
+                            <tr class="get post put delete head">
+                                <td>
+                                    <label>Follow Redirects Automatically:</label>
+                                </td>
+                                <td>
+                                    <input id="followRedirects" onchange="recreateCURL();" type="checkbox" />
+                                </td>
+                            </tr>
+                            <tr class="get post">
+                                <td>
+                                    <label for="compression">Request Compressed Response</label>
+                                </td>
+                                <td>
+                                    <input id="compression" onchange="recreateCURL();" type="checkbox" />
+                                </td>
+                            </tr>
+                            <tr class="get post put delete head">
+                                <td>
+                                    <label for="authentication">Use Authentication</label>
+                                </td>
+                                <td>
+                                    <input id="authentication" onchange="relayout(); recreateCURL();" type="checkbox" />
+                                </td>
+                            </tr>
+                            <tr id="authenticationOptions">
+                                <td colspan="2">
+                                    <table style="width:100%;">
+                                        <tr>
+                                            <td>
+                                                Username:
+                                            </td>
+                                            <td>
+                                                <input oninput="recreateCURL();" id="authenticationUsername" type="text" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Password:
+                                            </td>
+                                            <td>
+                                                <input oninput="recreateCURL();" id="authenticationPassword" type="text" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-right:10px">
+                                                <label>Type:</label>
+                                            </td>
+                                            <td id="authenticationType">
+                                                <input onchange="recreateCURL();" name="authentication" id="authenticationAuto" type="radio" checked />
+                                                <label for="authenticationAuto">Automatically Detect</label>
+                                                <br />
+                                                <input onchange="recreateCURL();" name="authentication" id="authenticationBasic" type="radio" />
+                                                <label for="authenticationBasic">Basic</label>
+                                                <br />
+                                                <input onchange="recreateCURL();" name="authentication" id="authenticationDigest" type="radio" />
+                                                <label for="authenticationDigest">Digest</label>
+                                                <br />
+                                                <input onchange="recreateCURL();" name="authentication" id="authenticationNegotiate" type="radio" />
+                                                <label for="authenticationNegotiate">Negotiate (SPNEGO)</label>
+                                                <br />
+                                                <input onchange="recreateCURL();" name="authentication" id="authenticationNTLM" type="radio" />
+                                                <label for="authenticationNTLM">NTLM</label>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr class="get post">
+                                <td>
+                                    <label for="rangeRequest">Range Request</label>
+                                </td>
+                                <td>
+                                    <input id="rangeRequest" onchange="relayout(); recreateCURL();" type="checkbox" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="rangeRequestOptions" style="display:none;" colspan="2">
+                                    <label>Add Range:</label>
+                                    <input oninput="recreateCURL();" placeholder="{offset}-{length}" type="text" id="range" />
+                                </td>
+                            </tr>
+                            <tr class="post put">
+                                <td>
+                                    <label for="data">Send Data</label>
+                                </td>
+                                <td>
+                                    <input id="data" onchange="relayout(); recreateCURL();" type="checkbox" />
+                                </td>
+                            </tr>
+                            <tr id="dataType">
+                                <td>
+                                    <label>Data Type:</label>
+                                </td>
+                                <td id="dataType">
+                                    <input onchange="relayout();recreateCURL();" name="dataType" id="form" type="radio" checked />
+                                    <label for="form">Form Data - URL Encoded</label>
+                                    <br />
+                                    <input onchange="relayout();recreateCURL();" name="dataType" id="formMultipart" type="radio" />
+                                    <label for="formMultipart">Form Data - Multipart</label>
+                                    <br />
+                                    <input onchange="relayout(); recreateCURL();" name="dataType" id="file" type="radio" />
+                                    <label for="file">File</label>
+                                    <br />
+                                    <input onchange="relayout(); recreateCURL();" name="dataType" id="binaryFile" type="radio" />
+                                    <label for="binaryFile">Binary File</label>
+                                    <br />
+                                    <input onchange="relayout(); recreateCURL();" name="dataType" id="json" type="radio" />
+                                    <label for="json">JSON</label>
+                                    <br />
+                                    <input onchange="relayout(); recreateCURL();" name="dataType" id="xml" type="radio" />
+                                    <label for="xml">XML</label>
+                                    <br />
+                                    <input onchange="relayout(); recreateCURL();" name="dataType" id="custom" type="radio" />
+                                    <label for="custom">Custom</label>
+                                </td>
+                            </tr>
+                            <tr id="formDataRow">
+                                <td>
+                                    <label for="formData">Form Data:</label>
+                                </td>
+                                <td>
+                                    <textarea placeholder="name1=value1&name2=value2" oninput="recreateCURL();" style="width:100%;" name="formData" id="formData"></textarea>
+                                </td>
+                            </tr>
+                            <tr id="formMultipartRow">
+                                <td style="width:100%" colspan="2">
+                                    <table id="formMultipartTable" style="width:100%">
+                                        <tr>
+                                            <th>
+                                                <input id="formMultipartTextbox" type="text" />
+                                                <br>
+                                                <input type="radio" id="formMultipartDataTypeString" name="formMultipartDataType" />
+                                                <label for="formMultipartDataTypeString">String</label>
+                                                <input type="radio" id="formMultipartDataTypeFile" name="formMultipartDataType" />
+                                                <label for="formMultipartDataTypeFile">File</label>
+                                            </th>
+                                            <th>
+                                                <input type="button" onclick="formMultipartAddClicked();" value="Add" />
+                                            </th>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr id="fileDataRow">
+                                <td>
+                                    <label for="fileData">File:</label>
+                                </td>
+                                <td>
+                                    <input oninput="recreateCURL();" style="width:100%;" type="text" name="fileData" id="fileData" />
+                                </td>
+                            </tr>
+                            <tr id="binaryFileDataRow">
+                                <td>
+                                    <label for="binaryFileData">Binary File:</label>
+                                </td>
+                                <td>
+                                    <input oninput="recreateCURL();" style="width:100%;" type="text" name="binaryFileData" id="binaryFileData" />
+                                </td>
+                            </tr>
+                            <tr id="jsonDataRow">
+                                <td>
+                                    <label for="jsonData">JSON Data:</label>
+                                </td>
+                                <td>
+                                    <textarea oninput="recreateCURL();" style="width:100%;" name="jsonData" id="jsonData"></textarea>
+                                </td>
+                            </tr>
+                            <tr id="xmlDataRow">
+                                <td>
+                                    <label for="xmlData">XML Data:</label>
+                                </td>
+                                <td>
+                                    <textarea oninput="recreateCURL();" style="width:100%;" name="xmlData" id="xmlData"></textarea>
+                                </td>
+                            </tr>
+                            <tr id="customDataRow">
+                                <td>
+                                    <label for="customData">Custom Data:</label>
+                                </td>
+                                <td>
+                                    <textarea oninput="recreateCURL();" style="width:100%;" name="customData" id="customData"></textarea>
+                                </td>
+                            </tr>
+                            <tr id="contentTypeRow">
+                                <td>
+                                    <label for="contentType">Content Type:</label>
+                                </td>
+                                <td>
+                                    <input type="text" oninput="recreateCURL();" style="width:100%;" name="contentType" id="contentType" />
+                                </td>
+                            </tr>
+                            <tr id="removeExpectRow">
+                                <td>
+                                    <label for="removeExpect">Remove Expect 100-continue</label>
+                                </td>
+                                <td>
+                                    <input id="removeExpect" onchange="relayout(); recreateCURL();" type="checkbox" />
+                                </td>
+                            </tr>
+                            <tr id="chunkedEncodingRow">
+                                <td>
+                                    <label for="chunkedEncoding">Use Chunked Encoding</label>
+                                </td>
+                                <td>
+                                    <input id="chunkedEncoding" onchange="relayout(); recreateCURL();" type="checkbox" />
+                                </td>
+                            </tr>
+                        </table>
+                        <div style="width:100%;border: 1px solid black;">
+                            <h6>cURL Command:</h6>
+                            <textarea style="width:100%;" id="curlCommand"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

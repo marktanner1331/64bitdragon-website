@@ -1,0 +1,39 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> linear_congruential_generator
+{
+    <span class="kwrd">class</span> Generator
+    {
+        <span class="kwrd">private</span> <span class="kwrd">uint</span> a = 4527;
+        <span class="kwrd">private</span> <span class="kwrd">uint</span> b = 104223;
+        <span class="kwrd">private</span> <span class="kwrd">uint</span> seed;
+        <span class="kwrd">private</span> <span class="kwrd">uint</span> m;
+
+        <span class="kwrd">public</span> Generator(<span class="kwrd">uint</span> seed, <span class="kwrd">uint</span> exclusiveUpperBound)
+        {
+            <span class="kwrd">this</span>.seed = seed;
+            m = exclusiveUpperBound;
+        }
+
+        <span class="kwrd">public</span> Generator(<span class="kwrd">uint</span> exclusiveUpperBound)
+        {
+            m = exclusiveUpperBound;
+
+            TimeSpan span= DateTime.Now.Subtract(<span class="kwrd">new</span> DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+            seed = (<span class="kwrd">uint</span>)span.TotalSeconds;
+        }
+
+        <span class="rem">//returns a pseudorandom number between 0 and the exclusive upper bound</span>
+        <span class="kwrd">public</span> <span class="kwrd">uint</span> next()
+        {
+            seed = (a * seed + b) % m;
+            <span class="kwrd">return</span> seed;
+        }
+    }
+}
+</pre></body></html>

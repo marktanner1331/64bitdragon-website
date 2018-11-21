@@ -1,0 +1,21 @@
+﻿in sample scores are a way of validating a model (assessing its quality)
+
+a model is trained with data,
+a set of predictions is generated from that same data (using the features),
+it is then assessed against that same data (the target)
+
+another way of saying it is that you are using the same data to both build the model and assess it
+
+this is why its bad
+imagine there was a coincidence in the data
+all green things are expensive, while all red ones are cheap
+this wont hold true in the real world, but the model training will fit this pattern
+
+if you validate the model against the same data (which includes the coincidence) it will score highly
+
+however, when it comes to using the model to predict against new data, (the whole point of the model) it wont be very accurate
+
+a work around for this is to split your data into two parts
+training data (used to train the model)
+validation data (used to validate the model)
+

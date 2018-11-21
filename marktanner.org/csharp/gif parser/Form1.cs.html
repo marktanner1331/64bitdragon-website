@@ -1,0 +1,92 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.ComponentModel;
+<span class="kwrd">using</span> System.Data;
+<span class="kwrd">using</span> System.Drawing;
+<span class="kwrd">using</span> System.IO;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Net;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+<span class="kwrd">using</span> System.Windows.Forms;
+
+<span class="kwrd">namespace</span> gif_parser
+{
+    <span class="kwrd">public</span> <span class="kwrd">partial</span> <span class="kwrd">class</span> Form1 : Form
+    {
+        <span class="kwrd">private</span> GIF gif;
+
+        <span class="kwrd">public</span> Form1()
+        {
+            InitializeComponent();
+
+            <span class="kwrd">byte</span>[] data = getBytesFromURL(<span class="str">"http://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif"</span>);
+            
+            <span class="kwrd">if</span> (data != <span class="kwrd">null</span>)
+            {
+                <span class="kwrd">try</span>
+                {
+                    gif = <span class="kwrd">new</span> GIF(data);
+                    pictureBox1.Image = gif.images[0].toImage();
+                }
+                <span class="kwrd">catch</span> (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e.Message);
+                }
+            }
+            <span class="kwrd">else</span>
+            {
+                <span class="rem">//error handling</span>
+            }
+        }
+
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// gets the bytes from a file</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="rem">/// &lt;param name="fullFilePath"&gt;the path to the file&lt;/param&gt;</span>
+        <span class="rem">/// &lt;returns&gt;a byte array containing the data&lt;/returns&gt;</span>
+        <span class="kwrd">private</span> <span class="kwrd">byte</span>[] GetBytesFromFile(<span class="kwrd">string</span> fullFilePath)
+        {
+            <span class="rem">// this method is limited to 2^32 byte files (4.2 GB)</span>
+
+            FileStream fs = <span class="kwrd">null</span>;
+            <span class="kwrd">try</span>
+            {
+                fs = File.OpenRead(fullFilePath);
+                <span class="kwrd">byte</span>[] bytes = <span class="kwrd">new</span> <span class="kwrd">byte</span>[fs.Length];
+                fs.Read(bytes, 0, Convert.ToInt32(fs.Length));
+                <span class="kwrd">return</span> bytes;
+            }
+            <span class="kwrd">finally</span>
+            {
+                <span class="kwrd">if</span> (fs != <span class="kwrd">null</span>)
+                {
+                    fs.Close();
+                    fs.Dispose();
+                }
+            }
+        }
+
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// takes a url, downloads the file and returns it as a byte array</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="rem">/// &lt;param name="url"&gt;the url&lt;/param&gt;</span>
+        <span class="rem">/// &lt;returns&gt;a byte array containing the data, or null if there was a problem&lt;/returns&gt;</span>
+        <span class="kwrd">private</span> <span class="kwrd">byte</span>[] getBytesFromURL(<span class="kwrd">string</span> url)
+        {
+            <span class="kwrd">try</span>
+            {
+                <span class="kwrd">using</span> (WebClient client = <span class="kwrd">new</span> WebClient())
+                {
+                    <span class="kwrd">return</span> client.DownloadData(url);
+                }
+            }
+            <span class="kwrd">catch</span>(Exception)
+            {
+                <span class="kwrd">return</span> <span class="kwrd">null</span>;
+            }
+        }
+    }
+}
+</pre></body></html>

@@ -1,0 +1,17 @@
+﻿bagging (or bootstrap aggregating)
+
+its an ensemble algorithm
+meaning that its made up of a collection of models
+
+if we have n models, then we need to train them with n sets of data
+we split the data D into n samples using bootstrap sampling
+
+bootstrap sampling is where you take m items from d items with replacement
+this means there might be duplicates in the data
+
+we train the n models with the n samples
+
+after each model has predicted the result, you combine it into a single output
+
+for regression models you use averaging
+for classification models you use voting

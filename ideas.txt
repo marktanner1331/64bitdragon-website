@@ -1,0 +1,13 @@
+javsscript tester 
+	import external scripts 
+	log console logs 
+	tidying
+	syntax highlighting
+	error correction
+	if its just a function that returns but doesnt log, log it anyway
+	runs locally so you can pull in local js files
+	
+spell checker
+	thesaurus
+	
+rota creator using constraints

@@ -1,0 +1,23 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+
+<span class="kwrd">namespace</span> psd_importer
+{
+    <span class="kwrd">class</span> LayerChannelData
+    {
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">int</span> RED = 0;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">int</span> GREEN = 1;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">int</span> BLUE = 2;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">int</span> TRANSPARENCY_MASK = -1;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">int</span> USER_SUPPLIED_LAYER_MASK = -2;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">int</span> REAL_USER_SUPPLIED_LAYER_MASK = -3;
+            
+        <span class="kwrd">public</span> <span class="kwrd">int</span> ID = 0;
+        <span class="kwrd">public</span> <span class="kwrd">uint</span> channelDataLength = 0;
+        <span class="kwrd">public</span> ByteArray data;
+    }
+}
+</pre></body></html>

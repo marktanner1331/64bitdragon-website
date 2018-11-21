@@ -1,0 +1,108 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    A function is mapping between two sets:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/sets/functions.png" />
+                    </div>
+                </li>
+                <li>
+                    The first set (denoted by <strong>X</strong>) is called the domain.
+                </li>
+                <li>
+                    The second set (denoted by <strong>Y</strong>) is called the codomain.
+                </li>
+                <li>
+                    Each mapping can be represented as an ordered pair, e.g. (a, 1). The set of all ordered pairs for the entire function is called the graph of the function, and is given the name <strong>G</strong>.
+                </li>
+                <li>
+                    For each element <strong>x</strong> in <strong>X</strong>, there exists a unique <strong>y</strong> in <strong>Y</strong>.
+                    <ul>
+                        <li>
+                            X is called the 'argument', 'input', or 'preimage'
+                        </li>
+                        <li>
+                            y is called the 'value', 'ouput', or 'image'
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    In the above example, not all elements of <strong>Y</strong> were mapped to from <strong>X</strong>. The subset of <strong>Y</strong> that has mappings from <strong>X</strong> is called the range.
+                    <ul>
+                        <li>
+                            This is also called the image of the function, and is denoted: <img src="/images/sets/image of function.svg" />
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Functional Notation</div>
+            <ul>
+                <li>
+                    <p>
+                        One common way to denote functions is using the functional notation.
+                    </p>
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/sets/functional function.svg" />
+                        <br />
+                        LaTeX: <code>\mathbf{y} = f(\mathbf{x})</code>
+                    </div>
+                </li>
+                <li>
+                    This is pronounced 'F of X'
+                </li>
+                <li>
+                    It is commonly used in areas of Mathematics which do not have a basis in set theory (such as calculus).
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Arrow Notation</div>
+            <ul>
+                <li>
+                    <p>
+                        Another way to denote functions is using arrow notation.
+                    </p>
+                    <div style="width:100%;text-align:center;margin-bottom:10px;">
+                        <img style="padding:10px 0 10px 10px" src="/images/sets/arrow function.svg" />
+                        <br />
+                        LaTeX: <code>f\colon \mathbf{X} \to \mathbf Y</code>
+                    </div>
+                </li>
+                <li>
+                    This is pronounced 'the function f from set <strong>X</strong> to set <strong>Y</strong>.
+                </li>
+                <li>
+                    It is commonly used in areas of Mathematics which have a basis in set theory.
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+def f(x):
+    graph = {
+        'a': 1,
+        'b': 3,
+        'c': 1
+    }
+
+    return graph.get(x)
+
+
+y = f('a')
+print(y)
+</pre>
+        </section>
+    </div>
+</div>

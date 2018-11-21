@@ -1,0 +1,29 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> binary_tree
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">int</span>[] values = {31, 59, 95, 58, 29, 71, 27, 38, 11, 95};
+            Node root = Node.buildTree(values);
+
+            Node needle = Node.find(root, 27);
+            Console.WriteLine(needle);
+
+            Node.preOrderPrint(root);
+            Node.postOrderPrint(root);
+            Node.inOrderPrint(root);
+            Node.levelOrder(root);
+
+            Console.Read();
+        }
+    }
+}
+</pre></body></html>

@@ -1,0 +1,56 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> Knuth_shuffle
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">int</span>[] arr = <span class="kwrd">new</span> <span class="kwrd">int</span>[10];
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; arr.Length; i++)
+            {
+                arr[i] = i;
+            }
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; arr.Length; i++)
+            {
+                Console.Write(arr[i]);
+                Console.Write(i &lt; arr.Length - 1 ? <span class="str">", "</span> : <span class="str">"\n"</span>);
+            }
+
+            arr = knuthShuffle(arr);
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; arr.Length; i++)
+            {
+                Console.Write(arr[i]);
+                Console.Write(i &lt; arr.Length - 1 ? <span class="str">", "</span> : <span class="str">"\n"</span>);
+            }
+
+            Console.Read();
+        }
+
+        <span class="kwrd">static</span> T[] knuthShuffle&lt;T&gt;(T[] source)
+        {
+            source = (T[])source.Clone();
+            Random rand = <span class="kwrd">new</span> Random();
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; source.Length; i++)
+            {
+                <span class="kwrd">int</span> j = rand.Next(i, source.Length);
+
+                <span class="rem">//exchange the chars at i and j</span>
+                T temp = source[i];
+                source[i] = source[j];
+                source[j] = temp;
+            }
+
+            <span class="kwrd">return</span> source;
+        }
+    }
+}
+</pre></body></html>

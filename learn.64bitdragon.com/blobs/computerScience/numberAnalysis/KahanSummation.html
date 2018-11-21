@@ -1,0 +1,61 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul>
+                <li>
+                    Kahan Summation is an algorithm that sums a set of floating point numbers while reducing the affects of rounding errors.
+                </li>
+                <li>
+                    It works by keeping track of the error produced by the previous iteration, and compensating for it in the current iteration.
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Simple Approach</div>
+            <pre>
+A = [.1, .1, .1, .1, .1, .1, .1, .1, .1, .1]
+
+total = 0
+for a in A:
+    total += a
+
+print(total)
+</pre>
+            This algorithm results in a total of <code>0.9999999999999999</code>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Kahan Summation</div>
+            <pre>
+A = [.1, .1, .1, .1, .1, .1, .1, .1, .1, .1]
+
+total = 0.0
+error = 0.0
+for a in A:
+    errorAdjustedA = a - error
+    tempTotal = total + errorAdjustedA
+    error = (tempTotal - total) - errorAdjustedA
+    total = tempTotal
+
+print(total)
+</pre>
+            This algorithm results in a total of <code>1.0</code>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notes</div>
+            <ul>
+                <li>
+                    Kahan Summation is also called 'Compensated Summation'
+                </li>
+                <li>
+                    While Kahan Summation produces dramatically better results over the simple approach, it does use 4 times as many arithmetic operations and is therefore slower.
+                </li>
+            </ul>
+        </section>
+    </div>

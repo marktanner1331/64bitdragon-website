@@ -1,0 +1,86 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> insertion_sort
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">int</span>[] arr = <span class="kwrd">new</span> <span class="kwrd">int</span>[10];
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; arr.Length; i++)
+            {
+                arr[i] = i;
+            }
+
+            arr = knuthShuffle(arr);
+
+            List&lt;<span class="kwrd">int</span>&gt; unsortedList = arr.ToList();
+            List&lt;<span class="kwrd">int</span>&gt; sortedList = insertionSort(unsortedList);
+
+            printArray(unsortedList.ToArray());
+            printArray(sortedList.ToArray());
+
+            Console.Read();
+        }
+
+        <span class="kwrd">static</span> List&lt;T&gt; insertionSort&lt;T&gt;(List&lt;T&gt; unsortedList) <span class="kwrd">where</span> T:IComparable
+        {
+            List&lt;T&gt; sortedList = <span class="kwrd">new</span> List&lt;T&gt;(unsortedList.Count);
+
+            <span class="kwrd">foreach</span> (T randomT <span class="kwrd">in</span> unsortedList)
+            {
+                <span class="kwrd">bool</span> wasInserted = <span class="kwrd">false</span>;
+                <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; sortedList.Count; i++)
+                {
+                    <span class="kwrd">if</span> (sortedList[i].CompareTo(randomT) &gt; 0)
+                    {
+                        sortedList.Insert(i, randomT);
+                        wasInserted = <span class="kwrd">true</span>;
+                        <span class="kwrd">break</span>;
+                    }
+                }
+
+                <span class="rem">//wouldnt need this if the list had sentinels.</span>
+                <span class="kwrd">if</span> (wasInserted == <span class="kwrd">false</span>)
+                {
+                    sortedList.Add(randomT);
+                }
+            }
+
+            <span class="kwrd">return</span> sortedList;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">void</span> printArray&lt;T&gt;(T[] arr)
+        {
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; arr.Length; i++)
+            {
+                Console.Write(arr[i]);
+                Console.Write(i &lt; arr.Length - 1 ? <span class="str">", "</span> : <span class="str">"\n"</span>);
+            }
+        }
+
+        <span class="kwrd">static</span> T[] knuthShuffle&lt;T&gt;(T[] source)
+        {
+            source = (T[])source.Clone();
+            Random rand = <span class="kwrd">new</span> Random();
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; source.Length; i++)
+            {
+                <span class="kwrd">int</span> j = rand.Next(i, source.Length);
+
+                <span class="rem">//exchange the chars at i and j</span>
+                T temp = source[i];
+                source[i] = source[j];
+                source[j] = temp;
+            }
+
+            <span class="kwrd">return</span> source;
+        }
+    }
+}
+</pre></body></html>

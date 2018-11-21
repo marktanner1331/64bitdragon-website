@@ -1,0 +1,321 @@
+﻿<html>
+<head>
+<title>Important Sets</title>
+	<meta charset="utf-8">
+	<meta name="description" content="An introduction to the set of integers and the set of real numbers, including example code in Python.">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="keywords" content="set theory,integers,real numbers,latex,python">
+	<meta name="author" content="Mark Tanner">
+
+	<link rel="stylesheet" href="/css/site.css" />
+	<link rel="stylesheet" href="/css/blob.css" />
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+	<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+	<!--<script src="/js/jquery-1.11.3.min.js" crossorigin="anonymous"></script>-->
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-113657998-2"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'UA-113657998-2');
+	</script>
+
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+	<script src="/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript">
+	$(document).ready(function() {
+		$( "#search" ).autocomplete({
+			source: "/search_ajax.php",
+			minLength: 2,
+			select: function( event, ui ) {
+				var url = "/articles/" + ui.item.value.replace(/ /g, "_").toLowerCase();
+				window.location.href = url;
+			}
+		});
+	});
+
+		function showHide(sender) {
+			var button = $(sender);
+			var container = $(button.parent().parent().children()[1]);
+			
+			if(container.css("display") == "block") {
+				container.css("display", "none");
+			} else {
+				container.css("display", "block");
+			}
+		}
+
+		function showAll() {
+			$("#prerequisites").find(".blob").find(".container").css("display", "block");
+		}
+
+		function hideAll() {
+			$("#prerequisites").find(".blob").find(".container").css("display", "none");
+		}
+	</script>
+</head>
+<body>
+<div class="siteHead">
+	<span style="margin-right:15px;" class="logo">
+		64bitdragon
+	</span>
+	<a href="/">
+            <span id="home" class="siteHeadButton">
+                HOME
+            </span>
+        </a>
+        <a href="/mathematics">
+            <span id="statistics" class="siteHeadButton">
+                Mathematics
+            </span>
+        </a>
+        <a href="/computer_science">
+            <span id="statistics" class="siteHeadButton">
+                Computer Science
+            </span>
+        </a>
+	<input type="text" id="search" placeholder="Search..">
+</div>
+<div 
+<div class="container" style="max-width:768px;padding-top:70px;">
+	<div class="row">
+		<div class="pageHeading"><header>Important Sets</header></div><div class="pageSubHeading" style="padding-bottom:15px"><span>Prerequisites</span><div class="showHide" onclick="showAll();">Show All</div><div class="showHide" style="margin-right:7px;" onclick="hideAll();">Hide All</div></div><div id="prerequisites"><article><div class="blob"><div class="prerequisiteHeading"><header>Sets</header><div class="showHide" onclick="showHide(this);">Show/Hide</div></div>﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    A set is a collection of elements, such as:
+                    <ul>
+                        <li>
+                            <strong>A</strong> = {1, 2, 3, 4, 5}
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    A set does not have order:
+                    <ul>
+                        <li>
+                            {1, 2, 3, 4, 5} is the same as {5, 4, 3, 2, 1}
+                        </li>
+                        <li>
+                            It is convenient to write the elements of a set in consecutive order, but this is only for convenience.
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Every element in a set is unique, multiples of the same element are ignored:
+                    <ul>
+                        <li>
+                            The set {1, 2, 2} has a size of 2, and is the same as {1, 2}
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notation</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    It is common for sets to be denoted by a uppercase letter, and for its elements to be wrapped in curly braces:k
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/sets/set.png" />
+                        <br />
+                        LaTeX: <code>\mathbf{A} = \{ 1, 2, 3, 4, 5 \}</code>
+                    </div>
+                </li>
+                <li>
+                    Sets can also be defined using set builder notation:
+                    <ul>
+                        <li>
+                            A rule is used to show which elements are members of the set:
+                            <div style="width:100%;text-align:center;">
+                                <img style="padding:10px 0 10px 10px" src="/images/sets/set builder notation.svg" />
+                            </div>
+                        </li>
+                        <li>
+                            The set <span class="htmlEquation"><b>A</b></span> defined above would contain all even integers between 0 and 2000.
+                        </li>
+                        <li>
+                            The format of the rule is: (formula: conditions) or (formula| conditions).
+                        </li>
+                        <li>
+                            If it is not specified as a condition, then it is assumed that <span class="htmlEquation"><b>a</b></span> is a real number.
+                        </li>
+                    </ul>
+
+            </ul>
+
+            </li>
+            </ul>
+
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Elements in a set</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    Elements in a set are usually represented by a lowercase letter.
+                </li>
+                <li>
+                    To demonstrate that an element is part of a set, we use the set membership symbol:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px;" src="/images/sets/element in set.png" />
+                        <br />
+                        LaTeX: <code>\mathbf{a} \in \mathbf{A}</code>
+                    </div>
+                </li>
+                <li>
+                    This can also be done with proper elements:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px" src="/images/sets/element in set 2.png" />
+                        <br />
+                        LaTeX: <code>\1 \in \{ 1, 2, 3, 4, 5 \}</code>
+                    </div>
+                </li>
+                <li>
+                    To show that an element is not part of a set, we use the 'not member of' symbol:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px" src="/images/sets/element not in set.png" />
+                        <br />
+                        LaTeX: <code>6 \notin \{ 1, 2, 3, 4, 5 \}</code>
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">The Empty Set</div>
+            <p>
+                The Empty Set (or Null Set) is a set containing no items. It is represented by the empty set symbol:
+            </p>
+            <div style="width:100%;text-align:center;">
+                <img style="padding:0 0 10px 10px" src="/images/sets/empty set.png" />
+                <br />
+                LaTeX: <code>\varnothing = \{\}</code>
+            </div>
+
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+A = frozenset([1, 2, 3, 4, 5])
+
+print(1 in A) # prints 'True'
+print(6 not in A) # prints 'True'
+</pre>
+        </section>
+    </div>
+</div>
+</div></article></div><div style="border-bottom: 1px solid #a2a9b1;"></div><br /><article><div class="blob"><div class="blobHeading"><header>Important Sets</header></div>﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    Some sets are used so often in mathematics that they are given their own names.
+                </li>
+                <li>
+                    This article will cover two of them:
+                    <ul>
+                        <li>
+                            <span class="htmlEquation"><b>Z</b></span>: The set of all integers.
+                        </li>
+                        <li>
+                            <span class="htmlEquation"><b>R</b></span>: The set of all real numbers.
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Integers</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    The set of all integers contains all the whole numbers, including negative numbers and 0.
+                </li>
+                <li>
+                    It is represented by an uppercase bold (or blackboard bold) <span class="htmlEquation"><b>Z</b></span>:
+                    <div style="width:100%;text-align:center;margin-bottom:10px;">
+                        <img style="padding:10px 0 10px 10px" src="/images/sets/integers.svg" />
+                        <br />
+                        LaTeX: <code>\mathbb{Z} = \{ ..., -3, -2, -1, 0, 1, 2, 3, ... \}</code>
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+i = 1
+print(type(i))  # prints &lt;class 'int'&gt;
+</pre>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Real Numbers</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    The set of all real numbers contains every number that is not imaginary. This includes:
+                    <ul class="ulBiggerGaps">
+                        <li>
+                            Integers: e.g. 0, 1, 2
+                        </li>
+                        <li>
+                            Rational Numbers: Those which can be represented as a fraction, e.g. 0.5, 1.1
+                        </li>
+                        <li>
+                            Irrational Numbers: Those which cannot be represented by a fraction, e.g. <img src="/images/symbols/sqrt2.svg" />
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    It is represented by an uppercase bold (or blackboard bold) <span class="htmlEquation"><b>R</b></span>:
+                    <div style="width:100%;text-align:center;margin-bottom:10px;">
+                        <img style="padding:10px 0 10px 10px" src="/images/sets/real numbers.svg" />
+                        <br />
+                        LaTeX: <code>\mathbb{R} = \{ -1, 1.4, \pi \}</code>
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            Unfortunately we cannot represent irrational numbers using code. Instead we can approximate them as floating point numbers:
+            <pre>
+r = 1.41421356237
+print(type(r))  # prints &lt;class 'float'&gt;
+</pre>
+        </section>
+    </div>
+</div>
+</div></article><div class="pageSubHeading" style="padding-bottom:15px"><span>Related</span></div><div class="related"><a href="/articles/sets_of_ordered_pairs"><header>Sets of Ordered Pairs</header><div>An introduction to the notation for sets of ordered pairs of integers and real numbers.</div></a></div>	</div>
+</div>
+<div style="margin-bottom:25px;"></div>
+</body>
+</html>

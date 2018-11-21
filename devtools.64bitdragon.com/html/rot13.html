@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Encrypt and Decrypt strings with Rot13 using this very simple and easy tool.">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rot13 Encryption - Online</title>
+
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113657998-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-113657998-1');
+    </script>
+
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+            google_ad_client: "ca-pub-9421706488410032",
+            enable_page_level_ads: true
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        function encrypt() {
+            var textArea = document.getElementById("textArea");
+
+            textArea.value = rotate(textArea.value);
+        }
+
+        function rotate(text) {
+            var ret = "";
+
+            for (var i = 0; i < text.length; i++) {
+                var char = text.charCodeAt(i);
+
+                if (char >= 97 && char <= 122) {
+                    char -= 97;
+                    char += 13;
+                    char %= 26;
+                    char += 97;
+                } else if (char >= 65 && char <= 90) {
+                    char -= 65;
+                    char += 13;
+                    char %= 26;
+                    char += 65;
+                }
+
+                ret += String.fromCharCode(char);
+            }
+
+            return ret;
+        }
+
+        $(document).ready(function () {
+            var textArea = document.getElementById("textArea");
+            textArea.onpaste = function () {
+                setTimeout(function () {
+                    document.getElementById("textArea").scrollTop = 0;
+                }, 50);
+            }
+
+            resize();
+        });
+        $(window).resize(resize);
+
+        function resize() {
+            var toolCell = $("#toolCell");
+
+            toolCell.css("height", ($(window).height() - toolCell.position().top - 75) + "px");
+        }
+    </script>
+</head>
+<body>
+    <div style="width:100%;height:50px;margin-bottom:15px;">
+        <div style="margin:auto;padding:10px;background:#dddddd;margin-bottom:15px;">
+            <a class="btn btn-default btn-md" style="" href="/" role="button">
+                Home
+            </a>
+            <div style="display:inline-block;position:absolute;left:50%;transform:translate(-50%, -15px);">
+                <header><h3>Rot13 Encryption</h3></header>
+            </div>
+        </div>
+    </div>
+    <div style="height:calc(100% - 65px);overflow:auto;">
+        <div class="container" style="max-width:768px;">
+            <div class="row">
+                <div class="col-md-offset-7 col-md-5 col-sm-offset-6 col-sm-6 col-xs-12">
+                    <a class="btn btn-primary" style="width:49%;" onclick="encrypt();" role="button">
+                        Encrypt
+                    </a>
+                    <a class="btn btn-primary" style="width:49%;" onclick="encrypt();" role="button">
+                        Decrypt
+                    </a>
+                </div>
+            </div>
+            <div class="row" id="toolCell">
+                <div class="col-md-12" style="height:100%;">
+                    <textarea id="textArea" placeholder="Text goes here." style="border:1px solid black;margin:10px;width:calc(100% - 10px);height:calc(100% - 20px);font-family:'Courier New';"></textarea>
+                </div>
+            </div>
+            <div class="row" style="height:100%">
+                <div class="col-md-12" style="height:100%;">
+                    <headxr>
+                        <h2>
+                            How it works
+                        </h2>
+                    </headxr>
+                    <section style="padding-bottom:50px;">
+                        Rot13 is a simple way of encypting text
+                        <br />
+                        <br />
+                        Every character is shifted forwards by 13 characters when encrypting, and shifted backwards 13 characters when decrypting. 
+                        <br />
+                        <br />
+                        This online tool will allow you to encrypt and decrypt rot13 data. It is completely client side and runs in the browser.
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,135 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    A set is a collection of elements, such as:
+                    <ul>
+                        <li>
+                            <strong>A</strong> = {1, 2, 3, 4, 5}
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    A set does not have order:
+                    <ul>
+                        <li>
+                            {1, 2, 3, 4, 5} is the same as {5, 4, 3, 2, 1}
+                        </li>
+                        <li>
+                            It is convenient to write the elements of a set in consecutive order, but this is only for convenience.
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Every element in a set is unique, multiples of the same element are ignored:
+                    <ul>
+                        <li>
+                            The set {1, 2, 2} has a size of 2, and is the same as {1, 2}
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notation</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    It is common for sets to be denoted by a uppercase letter, and for its elements to be wrapped in curly braces:k
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/sets/set.png" />
+                        <br />
+                        LaTeX: <code>\mathbf{A} = \{ 1, 2, 3, 4, 5 \}</code>
+                    </div>
+                </li>
+                <li>
+                    Sets can also be defined using set builder notation:
+                    <ul>
+                        <li>
+                            A rule is used to show which elements are members of the set:
+                            <div style="width:100%;text-align:center;">
+                                <img style="padding:10px 0 10px 10px" src="/images/sets/set builder notation.svg" />
+                            </div>
+                        </li>
+                        <li>
+                            The set <span class="htmlEquation"><b>A</b></span> defined above would contain all even integers between 0 and 2000.
+                        </li>
+                        <li>
+                            The format of the rule is: (formula: conditions) or (formula| conditions).
+                        </li>
+                        <li>
+                            If it is not specified as a condition, then it is assumed that <span class="htmlEquation"><b>a</b></span> is a real number.
+                        </li>
+                    </ul>
+
+            </ul>
+
+            </li>
+            </ul>
+
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Elements in a set</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    Elements in a set are usually represented by a lowercase letter.
+                </li>
+                <li>
+                    To demonstrate that an element is part of a set, we use the set membership symbol:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px;" src="/images/sets/element in set.png" />
+                        <br />
+                        LaTeX: <code>\mathbf{a} \in \mathbf{A}</code>
+                    </div>
+                </li>
+                <li>
+                    This can also be done with proper elements:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px" src="/images/sets/element in set 2.png" />
+                        <br />
+                        LaTeX: <code>\1 \in \{ 1, 2, 3, 4, 5 \}</code>
+                    </div>
+                </li>
+                <li>
+                    To show that an element is not part of a set, we use the 'not member of' symbol:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px" src="/images/sets/element not in set.png" />
+                        <br />
+                        LaTeX: <code>6 \notin \{ 1, 2, 3, 4, 5 \}</code>
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">The Empty Set</div>
+            <p>
+                The Empty Set (or Null Set) is a set containing no items. It is represented by the empty set symbol:
+            </p>
+            <div style="width:100%;text-align:center;">
+                <img style="padding:0 0 10px 10px" src="/images/sets/empty set.png" />
+                <br />
+                LaTeX: <code>\varnothing = \{\}</code>
+            </div>
+
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+A = frozenset([1, 2, 3, 4, 5])
+
+print(1 in A) # prints 'True'
+print(6 not in A) # prints 'True'
+</pre>
+        </section>
+    </div>
+</div>

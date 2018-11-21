@@ -1,0 +1,55 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.ComponentModel;
+<span class="kwrd">using</span> System.Data;
+<span class="kwrd">using</span> System.Drawing;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+<span class="kwrd">using</span> System.Windows.Forms;
+
+<span class="kwrd">namespace</span> draw_circle
+{
+    <span class="kwrd">public</span> <span class="kwrd">partial</span> <span class="kwrd">class</span> Form1 : Form
+    {
+        <span class="kwrd">public</span> Form1()
+        {
+            InitializeComponent();
+
+            Bitmap b = <span class="kwrd">new</span> Bitmap(pictureBox1.ClientSize.Width, pictureBox1.ClientSize.Height);
+            DrawCircle(b, b.Width / 2, b.Height / 2, b.Height / 4);
+
+            pictureBox1.Image = b;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">void</span> DrawCircle(Bitmap image, <span class="kwrd">int</span> x0, <span class="kwrd">int</span> y0, <span class="kwrd">int</span> radius)
+        {
+            <span class="kwrd">int</span> x = radius, y = 0;
+            <span class="kwrd">int</span> radiusError = 1 - x;
+
+            <span class="kwrd">while</span> (x &gt;= y)
+            {
+                image.SetPixel(x + x0, y + y0, Color.Black);
+                image.SetPixel(y + x0, x + y0, Color.Black);
+                image.SetPixel(-x + x0, y + y0, Color.Black);
+                image.SetPixel(-y + x0, x + y0, Color.Black);
+                image.SetPixel(-x + x0, -y + y0, Color.Black);
+                image.SetPixel(-y + x0, -x + y0, Color.Black);
+                image.SetPixel(x + x0, -y + y0, Color.Black);
+                image.SetPixel(y + x0, -x + y0, Color.Black);
+                y++;
+                <span class="kwrd">if</span> (radiusError &lt; 0)
+                {
+                    radiusError += 2 * y + 1;
+                }
+                <span class="kwrd">else</span>
+                {
+                    x--;
+                    radiusError += 2 * (y - x + 1);
+                }
+            }
+        }
+    }
+}
+</pre></body></html>

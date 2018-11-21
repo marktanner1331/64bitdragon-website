@@ -1,0 +1,87 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Diagnostics;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> permutation
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">byte</span>[] first = { 0, 1, 2, 3, 4 };
+
+            <span class="kwrd">do</span>
+            {
+                Debug.WriteLine(permutationToString(first));
+            }
+            <span class="kwrd">while</span> (nextPermutation(<span class="kwrd">ref</span> first));
+        }
+        
+        <span class="rem">//returns false is there are no more permutations</span>
+        <span class="rem">//techincally dont need the ref here, but it makes it nice and explicit that we are modifying </span>
+        <span class="rem">//the array that was passed in</span>
+        <span class="kwrd">static</span> <span class="kwrd">bool</span> nextPermutation(<span class="kwrd">ref</span> <span class="kwrd">byte</span>[] permutation)
+        {
+            <span class="kwrd">int</span> indexOfStartOfSuffix = permutation.Length - 1;
+            <span class="kwrd">while</span> (indexOfStartOfSuffix &gt; 0 &amp;&amp; permutation[indexOfStartOfSuffix - 1] &gt; permutation[indexOfStartOfSuffix])
+            {
+                indexOfStartOfSuffix--;
+            }
+
+            <span class="kwrd">if</span> (indexOfStartOfSuffix == 0)
+            {
+                <span class="kwrd">return</span> <span class="kwrd">false</span>;
+            }
+
+            <span class="kwrd">int</span> indexOfPivot = indexOfStartOfSuffix - 1;
+            <span class="kwrd">int</span> indexOfNewPivot = permutation.Length - 1;
+
+            <span class="kwrd">while</span> (permutation[indexOfPivot] &gt; permutation[indexOfNewPivot])
+            {
+                indexOfNewPivot--;
+            }
+
+            <span class="kwrd">byte</span> temp = permutation[indexOfPivot];
+            permutation[indexOfPivot] = permutation[indexOfNewPivot];
+            permutation[indexOfNewPivot] = temp;
+
+            <span class="kwrd">int</span> indexOfEndOfSuffix = permutation.Length - 1;
+
+            <span class="kwrd">while</span> (indexOfStartOfSuffix &lt; indexOfEndOfSuffix)
+            {
+                temp = permutation[indexOfStartOfSuffix];
+                permutation[indexOfStartOfSuffix] = permutation[indexOfEndOfSuffix];
+                permutation[indexOfEndOfSuffix] = temp;
+
+                indexOfStartOfSuffix++;
+                indexOfEndOfSuffix--;
+            }
+
+            <span class="kwrd">return</span> <span class="kwrd">true</span>;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">string</span> permutationToString(<span class="kwrd">byte</span>[] permutation)
+        {
+            StringBuilder sb = <span class="kwrd">new</span> StringBuilder();
+
+            <span class="kwrd">for</span>(<span class="kwrd">int</span> i = 0;i &lt; permutation.Length;i++)
+            {
+                <span class="kwrd">if</span> (i != 0)
+                {
+                    sb.Append(<span class="str">", "</span> + permutation[i]);
+                }
+                <span class="kwrd">else</span>
+                {
+                    sb.Append(permutation[i]);
+                }
+            }
+
+            <span class="kwrd">return</span> sb.ToString();
+        }
+    }
+}
+</pre></body></html>

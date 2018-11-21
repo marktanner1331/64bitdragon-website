@@ -1,0 +1,147 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> binary_heap
+{
+    <span class="kwrd">class</span> BinaryHeap
+    {
+        <span class="rem">//first element isnt used to make the maths easier</span>
+        <span class="kwrd">private</span> <span class="kwrd">int</span>[] values;
+        <span class="kwrd">public</span> <span class="kwrd">int</span> size;
+
+        <span class="kwrd">public</span> BinaryHeap()
+        {
+            values = <span class="kwrd">new</span> <span class="kwrd">int</span>[1];
+            size = 0;
+        }
+
+        <span class="kwrd">public</span> BinaryHeap(<span class="kwrd">int</span>[] data)
+        {
+            values = <span class="kwrd">new</span> <span class="kwrd">int</span>[data.Length + 1];
+            size = data.Length;
+
+            <span class="rem">//notice how values is one based</span>
+            Array.Copy(data, 0, values, 1, size);
+
+            refreshAllNodes();
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">int</span> deleteMin()
+        {
+            <span class="kwrd">if</span>(size == 0)
+            {
+                <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"binary heap is of size 0"</span>);
+            }
+
+            <span class="kwrd">int</span> min = values[1];
+
+            <span class="rem">//make the smallest element the root</span>
+            values[1] = values[size];
+            size--;
+
+            <span class="kwrd">if</span> (size &gt; 0)
+            {
+                percolateDown(1);
+            }
+
+            <span class="kwrd">return</span> min;
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> refreshAllNodes()
+        {
+            <span class="rem">//in a balanced tree, size / 2 will refer to the last element in the penultimate layer</span>
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = size / 2; i &gt; 0; i--)
+            {
+                percolateDown(i);
+            }
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> insert(<span class="kwrd">int</span> <span class="kwrd">value</span>)
+        {
+            <span class="kwrd">if</span> (size == values.Length - 1)
+            {
+                doubleCapacity();
+            }
+
+            size++;
+
+            values[size] = <span class="kwrd">value</span>;
+            percolateUp(size);
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> doubleCapacity()
+        {
+            <span class="kwrd">int</span>[] values2 = <span class="kwrd">new</span> <span class="kwrd">int</span>[values.Length];
+            Array.Copy(values, 1, values2, 1, size);
+            values = values2;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">override</span> <span class="kwrd">string</span> ToString()
+        {
+            <span class="kwrd">string</span> s = <span class="str">""</span>;
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 1; i &lt; size; i++)
+            {
+                s += values[i] + <span class="str">", "</span>;
+            }
+            s += values[size];
+            <span class="kwrd">return</span> s;
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> percolateDown(<span class="kwrd">int</span> index)
+        {
+            <span class="kwrd">int</span> valueToPercolate = values[index];
+            <span class="kwrd">int</span> index2;
+
+            <span class="rem">//index refers to the parent</span>
+            <span class="rem">//index2 refers to the child</span>
+            
+            <span class="rem">//remember that values is one-based</span>
+            <span class="kwrd">while</span>(index * 2 &lt;= size)
+            {
+                index2 = index * 2;
+
+                <span class="rem">//if the other child is larger, use it</span>
+                <span class="kwrd">if</span>(index2 != size &amp;&amp; values[index2] &gt; values[index2 + 1])
+                {
+                    index2++;
+                }
+
+                <span class="rem">//swap if the value we are perolating is greater than the child</span>
+                <span class="kwrd">if</span> (valueToPercolate &gt; values[index2])
+                {
+                    values[index] = values[index2];
+                }
+                <span class="kwrd">else</span>
+                {
+                    <span class="kwrd">break</span>;
+                }
+
+                index = index2;
+            }
+
+            values[index] = valueToPercolate;
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> percolateUp(<span class="kwrd">int</span> index)
+        {
+            <span class="kwrd">int</span> valueToPercolate = values[index];
+
+            <span class="rem">//while the index is not the root, and the value is greater than the values parant</span>
+            <span class="kwrd">while</span> (index &gt; 1 &amp;&amp; valueToPercolate &gt; values[index / 2])
+            {
+                <span class="rem">//put the parant where the child was</span>
+                values[index] = values[index / 2];
+                
+                <span class="rem">//move to the parent</span>
+                index = index / 2;
+            }
+
+            values[index] = valueToPercolate;
+        }
+    }
+}
+</pre></body></html>

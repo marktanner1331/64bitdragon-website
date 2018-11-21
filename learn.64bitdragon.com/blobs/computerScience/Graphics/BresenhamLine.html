@@ -1,0 +1,316 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    Computer screens are nothing more than an array of pixels, while a line is continuous set of points bounded at each end.
+                </li>
+                <li>
+                    To draw a line on a screen, we need to approximate it as a set of pixels which lie on or near the line.
+                </li>
+                <li>
+                    For example:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/computer graphics/bresenham.svg" />
+                    </div>
+                </li>
+            </ul>
+
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Simple Approach</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    A simple approach would be to find an equation for the line, and generate a set of (x, y) pairs for the pixels.
+                </li>
+                <li>
+                    Any (non vertical) straight line can be represented by the equation: <strong>y</strong> = m<strong>x</strong> + b
+                    <ul class="ulBiggerGaps2">
+                        <li>
+                            m is the gradient of the line.
+                        </li>
+                        <li>
+                            b is the <strong>y</strong> component of the point at which the line intersects with the <strong>y</strong> axis.
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Simple Approach Example</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    Lets draw a line that starts at (0, 0) and ends at (8, 2) as illustrated above.
+                </li>
+                <li>
+                    First we calculate the equation for the line:
+                    <ol>
+                        <li>
+                            <img style="padding:10px 0 10px 10px" src="/images/computer graphics/bresenham 5.svg" />
+                        </li>
+                        <li>
+                            <img style="padding:10px 0 10px 10px" src="/images/computer graphics/bresenham 6.svg" />
+                        </li>
+                        <li>
+                            <img style="padding:10px 0 10px 10px" src="/images/computer graphics/bresenham 7.svg" />
+                        </li>
+                        <li>
+                            <img style="padding:10px 0 10px 10px" src="/images/computer graphics/bresenham 8.svg" />
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    Then we generate a list of ordered pairs using the equation:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/computer graphics/bresenham 3.svg" />
+                    </div>
+                </li>
+                <li>
+                    And round them into integers:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/computer graphics/bresenham 4.svg" />
+                    </div>
+                </li>
+                <li>
+                    Finally we can plot those pairs as pixels on the screen.
+                </li>
+            </ul>
+            <strong>Code</strong>
+            <pre>
+def simple(start, end):
+    x1, y1 = start
+    x2, y2 = end
+
+    m = (y2 - y1) / (x2 - x1)  # Python does floating point division by default
+    b = y1 - m * x1
+
+    points = []
+    for x in range(x1, x2 + 1):
+        points.append((x, round(m * x + b)))
+
+    return points
+
+
+def plotLine(start, end):
+    points = simple(start, end)
+    print(points)
+
+
+plotLine((0, 0), (8, 2))
+</pre>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Problems with the Simple Approach</div>
+            The simple approach has a number of problems:
+            <ul class="ulBiggerGaps2">
+                <li>
+                    It is limited to lines that run left to right, i.e. x<sub>1</sub> &lt; x<sub>2</sub>.
+                </li>
+                <li>
+                    The gradient is limited to between -1 and 1. Other values would mean plotting multiple pixels for each increment of x.
+                </li>
+                <li>
+                    Vertical lines would cause a divide-by-zero exception.
+                </li>
+                <li>
+                    It is inefficient, as it relies on floating point multiplication, division, and addition.
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">The Bresenham Line Algorithm</div>
+            <ul class="ulBiggerGaps2">
+                <li>
+                    The bresenham line algorithm can be used to draw a line in any direction, including vertically.
+                </li>
+                <li>
+                    Its main strength is its efficiency, as it can be done using nothing but integer arithmetic, no floating points necessary.
+                </li>
+                <li>
+                    It can be derived from improving the efficiency and flexibility of the simple approach.
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Deriving Bresenham Line Algorithm</div>
+            <ol class="ulBiggerGaps">
+                <li>
+                    Lets start with the code from the simple approach:
+                    <pre>
+def bresenham(start, end):
+    x1, y1 = start
+    x2, y2 = end
+
+    m = (y2 - y1) / (x2 - x1)
+    b = y1 - m * x1
+
+    points = []
+    for x in range(x1, x2 + 1):
+        points.append((x, round(m * x + b)))
+
+    return points
+</pre>
+                </li>
+                <li>
+                    Each time we increment <b>x</b> by 1, we increment <b>y</b> by <b>m</b>. This means that we don't have to calculate <b>y</b> from scratch each time and can remove the calculation of <b>b</b> completely.
+                    <pre>
+def bresenham(start, end):
+    x1, y1 = start
+    x2, y2 = end
+
+    m = (y2 - y1) / (x2 - x1)
+    y = y1
+
+    points = []
+    for x in range(x1, x2 + 1):
+        points.append((x, round(y)))
+        y += m
+
+    return points
+</pre>
+                </li>
+                <li>
+                    Next we can remove the <code>round(y)</code>. We can do this by splitting <b>y</b> into two parts, its integer part and its fractional part (called the error). If the error is greater than 0.5 then it should get rounded up, so we increment <b>y</b> instead and reset the error by decrementing it:
+                    <pre>
+def bresenham(start, end):
+    x1, y1 = start
+    x2, y2 = end
+
+    m = (y2 - y1) / (x2 - x1)
+    y = y1
+    e = 0
+
+    points = []
+    for x in range(x1, x2 + 1):
+        points.append((x, y))
+
+        if e + m >= 0.5:
+            y += 1
+            e += m - 1
+        else:
+            e += m
+
+    return points
+</pre>
+                </li>
+                <li>
+                    We want to remove the need for floating point arithmetic, the only place that fractions are introduced is in the calculation of <b>m</b>, if that remains as an integer then everything else will also remain as an integer.
+
+                    <ol type="a" class="ulBiggerGaps2">
+                        <li>
+                            Lets start by breaking up the calculation into multiple parts:
+                            <pre>
+deltaX = x2 - x1
+deltaY = y2 - y1
+
+m = deltaY / deltaX
+</pre>
+                            <b>m</b> is still a float, but deltaX and deltaY are integers.
+                        </li>
+                        <li>
+                            Next we multiply <b>m</b> by <b>deltaX</b>, this means that anywhere we use <b>m</b> we will also need to multiply by <b>deltaX</b>:
+                            <pre>
+def bresenham(start, end):
+    x1, y1 = start
+    x2, y2 = end
+
+    deltaX = x2 - x1
+    deltaY = y2 - y1
+
+    m = deltaY
+    y = y1
+    e = 0
+
+    points = []
+    for x in range(x1, x2 + 1):
+        points.append((x, y))
+
+        if e + m >= 0.5 * deltaX:
+            y += 1
+            e += m - 1 * deltaX
+        else:
+            e += m
+
+    return points
+</pre>
+                        </li>
+                        <li>
+                            And finally remove the <code>0.5 * deltaX</code> by multiplying both sides by 2:
+                            <pre>
+def bresenham(start, end):
+    x1, y1 = start
+    x2, y2 = end
+
+    deltaX = x2 - x1
+    deltaY = y2 - y1
+
+    m = deltaY
+    y = y1
+    e = 0
+
+    points = []
+    for x in range(x1, x2 + 1):
+        points.append((x, y))
+
+        if 2*(e + m) >= 1 * deltaX:
+            y += 1
+            e += m - 1 * deltaX
+        else:
+            e += m
+
+    return points
+</pre>
+                        </li>
+                        <li>
+                            At this point, everything is an integer, we can tidy up the code by removing <b>m</b>, as it is equal to <b>deltaY</b>:
+                            <pre>
+def bresenham(start, end):
+    x1, y1 = start
+    x2, y2 = end
+
+    deltaX = x2 - x1
+    deltaY = y2 - y1
+
+    y = y1
+    e = 0
+
+    points = []
+    for x in range(x1, x2 + 1):
+        points.append((x, y))
+
+        if 2*(e + deltaY) >= deltaX:
+            y += 1
+            e += deltaY - deltaX
+        else:
+            e += deltaY
+
+    return points
+</pre>
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Final Observations</div>
+            <ul class="ulBiggerGaps2">
+                <li>
+                    In the above examples, the Bresenham line algorithm will give slightly different results (chooses different pixels) from the simple approach. This is because the simple approach uses <code>round()</code>, which uses a 'round half to even' strategy: <code>round(0.5) == 0</code>
+                </li>
+            </ul>
+        </section>
+    </div>
+</div>

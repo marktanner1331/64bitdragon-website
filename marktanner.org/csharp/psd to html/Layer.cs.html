@@ -1,0 +1,699 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Drawing;
+<span class="kwrd">using</span> System.Drawing.Imaging;
+<span class="kwrd">using</span> System.IO;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+
+<span class="kwrd">namespace</span> psd_importer
+{
+    <span class="kwrd">class</span> Layer
+    {
+        <span class="rem">//the bounds of the layer</span>
+        <span class="kwrd">public</span> <span class="kwrd">int</span> left = 0;
+        <span class="kwrd">public</span> <span class="kwrd">int</span> right = 0;
+        <span class="kwrd">public</span> <span class="kwrd">int</span> top = 0;
+        <span class="kwrd">public</span> <span class="kwrd">int</span> bottom = 0;
+
+        <span class="rem">//the number of color channels, including alpha channels</span>
+        <span class="kwrd">public</span> <span class="kwrd">uint</span> numberOfChannels = 1;
+
+        <span class="rem">//a vector containing the channels</span>
+        <span class="kwrd">public</span> List&lt;LayerChannelData&gt; channels = <span class="kwrd">new</span> List&lt;LayerChannelData&gt;();
+
+        <span class="kwrd">public</span> <span class="kwrd">string</span> signiture = <span class="str">"8BIM"</span>;
+        
+        <span class="kwrd">public</span> <span class="kwrd">uint</span> opacity = 255; <span class="rem">//0 - 255</span>
+            
+        <span class="kwrd">public</span> Boolean hasTransparency = <span class="kwrd">false</span>;
+
+        <span class="rem">//deciding whether a layer is visible takes more than just checking this</span>
+        <span class="rem">//boolean, for example this can be set to true, but for the parent folder </span>
+        <span class="rem">//it could be set to false, making all its children invisible</span>
+        <span class="kwrd">public</span> Boolean visible = <span class="kwrd">true</span>;
+        <span class="kwrd">public</span> <span class="kwrd">string</span> name = <span class="str">""</span>;
+            
+        <span class="rem">//depending on whether its a text layer, we decide whether to render the layer</span>
+        <span class="rem">//as an image, or extract its text</span>
+        <span class="kwrd">public</span> Boolean isTextLayer = <span class="kwrd">false</span>;
+
+        <span class="kwrd">public</span> LayerMask mask;
+        <span class="kwrd">public</span> <span class="kwrd">string</span> text = <span class="str">""</span>;
+
+        <span class="kwrd">public</span> <span class="kwrd">uint</span> type = TYPE_NORMAL; <span class="rem">//corresponds to the TYPE_ constants below</span>
+        
+        <span class="rem">//the children and parentLayer variables lets you navigate the layers like a tree</span>
+        <span class="rem">//however only layers of type TYPE_FOLDER_OPEN and TYPE_FOLDER_CLOSED will have</span>
+        <span class="rem">//children, while only layers that aren't top level will have a parent layer</span>
+        <span class="kwrd">public</span> List&lt;Layer&gt; children = <span class="kwrd">new</span> List&lt;Layer&gt;();
+        <span class="kwrd">public</span> Layer parentLayer;
+        
+        <span class="rem">//these correspond to the layer.type</span>
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">uint</span> TYPE_NORMAL = 0;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">uint</span> TYPE_FOLDER_OPEN = 1;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">uint</span> TYPE_FOLDER_CLOSED = 2;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">uint</span> TYPE_HIDDEN = 3;
+            
+        <span class="rem">//obviously dont use this for a full implementation</span>
+        <span class="kwrd">public</span> <span class="kwrd">string</span> fontName = <span class="str">""</span>;
+        <span class="kwrd">public</span> <span class="kwrd">string</span> fontSize = <span class="str">"1"</span>;
+        <span class="kwrd">public</span> Bitmap image;
+
+        <span class="rem">//parse stuff at the end of the layer, this is where the text is stored</span>
+        <span class="kwrd">public</span> <span class="kwrd">void</span> parseAdditionalLayerInfo(<span class="kwrd">string</span> tagName, <span class="kwrd">int</span> tagLength, ByteArray bytes)
+        {
+            <span class="rem">//get the start of the next tag, so that if we screw up parsing this one, we can still parse the </span>
+            <span class="rem">//one after it</span>
+            <span class="kwrd">long</span> endOfTag = bytes.Position + tagLength;
+            
+            <span class="kwrd">uint</span> version;
+            <span class="kwrd">uint</span> descriptorVersion;
+
+            <span class="rem">//these are just like the image resource blocks in the image resources section</span>
+            <span class="rem">//cant be bothered to parse most of these at the moment</span>
+            <span class="kwrd">switch</span> (tagName)
+            {
+                <span class="kwrd">case</span> <span class="str">"TySh"</span>:
+                    <span class="rem">//type tool for photoshop 6.0 and later</span>
+                    <span class="rem">//this is the most important tag as it contains the text and font</span>
+                    <span class="rem">//properties that we need to extract</span>
+
+                    <span class="rem">//tell everyone that it is a text layer so that we dont accidently</span>
+                    <span class="rem">//render it as an image</span>
+                    isTextLayer = <span class="kwrd">true</span>;
+                    
+                    <span class="rem">//get the version, although we dont care about it</span>
+                    version = bytes.getUI16();
+
+                    bytes.skipBytes(48); <span class="rem">//transform, not parsing it at the moment, but i think we will</span>
+                    <span class="rem">//need to in order to get the proper bounds of the layer with respect to parent layers</span>
+                    <span class="rem">//and masks</span>
+
+                    <span class="rem">//get the text version, although we dont care about it</span>
+                    <span class="kwrd">uint</span> textVersion = bytes.getUI16();
+
+                    <span class="rem">//get the descriptor version, although we dont care about it</span>
+                    descriptorVersion = bytes.getUI32();
+
+                    parseDescriptor(bytes, endOfTag);
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> <span class="str">"lsct"</span>:
+                    <span class="rem">//layer divider info</span>
+                    type = bytes.getUI32();
+                    <span class="kwrd">break</span>;
+            }
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseDescriptor(ByteArray bytes, <span class="kwrd">long</span> endOfTag)
+        {
+            <span class="rem">//not too fussed about the classID, but we dont have much of a choice but</span>
+            <span class="rem">//to parse it</span>
+            String classIDName = bytes.getUnicodeString();
+            
+            <span class="rem">//class id is stored as a key</span>
+            String classID = bytes.getKey();
+            
+            <span class="rem">//the number of items this descriptor has, not sure if this is completely</span>
+            <span class="rem">//accurate</span>
+            <span class="kwrd">uint</span> numItems = bytes.getUI32();
+
+            <span class="rem">//the amount of items is never 'numItems' so just read to the end of the tag</span>
+            <span class="rem">//this loop is a little dangerous as there is no way to find out where</span>
+            <span class="rem">//one item ends and the next one starts, all we can do is make sure we </span>
+            <span class="rem">//dont overflow the whole tag</span>
+            <span class="kwrd">for</span>(<span class="kwrd">uint</span> i = 0;i &lt; numItems;i++)
+            {
+                <span class="kwrd">if</span>(parseItem(bytes, endOfTag, <span class="kwrd">true</span>) == <span class="kwrd">false</span>)
+                {
+                    <span class="kwrd">return</span>;
+                }
+            }
+        }
+
+        <span class="rem">//parses an individual tag in the data, returns false if it finds something it doesnt understand</span>
+        <span class="kwrd">private</span> <span class="kwrd">bool</span> parseItem(ByteArray bytes, <span class="kwrd">long</span> endOfTag, Boolean hasKey)
+        {
+            <span class="rem">//the key length stuff is confusing, if its length is 0, its length is 4,</span>
+            <span class="rem">//and the key corresponds to a known type</span>
+            String key = <span class="str">""</span>;
+            <span class="kwrd">if</span>(hasKey)
+            {
+                key = bytes.getKey();
+            }
+
+            <span class="rem">//the os type key is the type of data to follow</span>
+            String OSTypeKey = bytes.getString(4);
+
+            <span class="kwrd">switch</span> (OSTypeKey)
+            {
+                <span class="kwrd">case</span> <span class="str">"TEXT"</span>: <span class="rem">//straight forward enough</span>
+                    String text = bytes.getUnicodeString();
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> <span class="str">"enum"</span>:
+                    String enumKey = bytes.getKey();
+
+                    <span class="rem">//the value is stored like a key</span>
+                    String enumValue = bytes.getKey();
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> <span class="str">"long"</span>:
+                    <span class="kwrd">int</span> <span class="kwrd">value</span> = bytes.getI32();
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> <span class="str">"ObAr"</span>:
+                    <span class="rem">//throw new Exception("i cant handle object arrays");</span>
+                    <span class="kwrd">return</span> <span class="kwrd">false</span>;
+                <span class="kwrd">case</span> <span class="str">"doub"</span>:
+                    <span class="rem">//throw new Exception("i cant handle doubles");</span>
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> <span class="str">"tdta"</span>: <span class="rem">//this is raw data, could be fun</span>
+                    <span class="kwrd">if</span>(key == <span class="str">"EngineData"</span>)
+                    {
+                        parseEngineDataStructure(bytes, endOfTag);
+                    }
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> <span class="str">"UntF"</span>:
+                    <span class="rem">//throw new Exception("i cant handle unit floats");</span>
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> <span class="str">"bool"</span>:
+                    <span class="rem">//bools are stored as a single byte,</span>
+                    bytes.skipBytes(1);
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> <span class="str">"Objc"</span>: <span class="rem">//found a descriptor within a descriptor</span>
+                    parseDescriptor(bytes, endOfTag);
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> <span class="str">"VlLs"</span>: <span class="rem">//this is a list</span>
+                    <span class="kwrd">uint</span> listLength = bytes.getUI32();
+                    
+                    <span class="kwrd">for</span>(<span class="kwrd">uint</span> i = 0;i &lt; listLength;i++)
+                    {
+                        <span class="rem">//parse item returns false if it finds something it doesnt understand</span>
+                        <span class="kwrd">if</span>(parseItem(bytes, endOfTag, <span class="kwrd">false</span>) == <span class="kwrd">false</span>)
+                        {
+                            <span class="kwrd">return</span> <span class="kwrd">false</span>;
+                        }
+                    }
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">default</span>:
+                    <span class="kwrd">return</span> <span class="kwrd">false</span>;
+            }
+            
+            <span class="kwrd">return</span> <span class="kwrd">true</span>;
+        }
+
+        <span class="rem">//the text engine data format is complicated, although godden told me its the </span>
+        <span class="rem">//same as how pdf's store it</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseEngineDataStructure(ByteArray bytes, <span class="kwrd">long</span> endOfTag)
+        {
+            <span class="kwrd">byte</span> b;
+            
+            <span class="rem">//find the start of the data by looking for the first &lt;</span>
+            <span class="kwrd">while</span>((b = bytes.getByte()) != 0x3c &amp;&amp; bytes.Position &lt; endOfTag)
+            {
+                
+            }
+            
+            <span class="rem">//make sure we actually found one</span>
+            <span class="kwrd">if</span>(bytes.Position == endOfTag)
+            {
+                <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"could not find start of text engine data"</span>);
+            }
+            
+            <span class="kwrd">long</span> startPos = bytes.Position;
+            
+            <span class="rem">//we are at the start now, the end of the data will be 0x3e 0x3e 0x00</span>
+            <span class="kwrd">byte</span> firstByte = bytes.getByte();
+            <span class="kwrd">byte</span> secondByte = bytes.getByte();
+            <span class="kwrd">byte</span> thirdByte = bytes.getByte();
+            
+            <span class="rem">//move to the start of the structure</span>
+            <span class="kwrd">while</span>(bytes.Position &lt; endOfTag)
+            {
+                <span class="rem">// 0x3e is a &gt;</span>
+                <span class="kwrd">if</span>(firstByte == 0x3e &amp;&amp; secondByte == 0x3e &amp;&amp; thirdByte == 0x00)
+                {
+                    <span class="kwrd">break</span>;
+                }
+                
+                firstByte = secondByte;
+                secondByte = thirdByte;
+                thirdByte = bytes.getByte();
+            }
+            
+            <span class="kwrd">if</span>(bytes.Position == endOfTag)
+            {
+                <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"could not find end of text engine data"</span>);
+            }
+            
+            <span class="kwrd">long</span> endPos = bytes.Position;
+            
+            <span class="rem">//we can use the startPos and endPos to get the data in the middle</span>
+            bytes.Position = startPos;
+            ByteArray engineData = bytes.getBytes((<span class="kwrd">uint</span>)(endPos - startPos));
+            
+            <span class="rem">//engineData now contains the engineData, this code works</span>
+
+            TextEngineNode dataObject = parseEngineData(engineData, 0);
+            
+            <span class="rem">//now that we have parsed all of the engineData and stored it in 'dataObject', we retreive the</span>
+            <span class="rem">//nodes that we need</span>
+
+            TextEngineNode tempNode;
+            
+            tempNode = dataObject.getNestedNodeByKey(<span class="kwrd">new</span> <span class="kwrd">string</span>[]{<span class="str">"ResourceDict"</span>, <span class="str">"FontSet"</span>, <span class="str">"Name"</span>});
+            <span class="kwrd">if</span>(tempNode != <span class="kwrd">null</span>)
+            {
+                fontName = tempNode.<span class="kwrd">value</span>;
+            }
+
+            tempNode = dataObject.getNestedNodeByKey(<span class="kwrd">new</span> <span class="kwrd">string</span>[] { <span class="str">"EngineDict"</span>, <span class="str">"StyleRun"</span>, <span class="str">"RunArray"</span>, 
+                                                                    <span class="str">"StyleSheet"</span>, <span class="str">"StyleSheetData"</span>, <span class="str">"FontSize"</span>});
+            <span class="kwrd">if</span>(tempNode != <span class="kwrd">null</span>)
+            {
+                fontSize = tempNode.<span class="kwrd">value</span>;
+            }
+
+            tempNode = dataObject.getNestedNodeByKey(<span class="kwrd">new</span> <span class="kwrd">string</span>[] { <span class="str">"EngineDict"</span>, <span class="str">"Editor"</span>, <span class="str">"Text"</span>});
+            <span class="kwrd">if</span>(tempNode != <span class="kwrd">null</span>)
+            {
+                text = tempNode.<span class="kwrd">value</span>;
+            }
+        }
+
+        <span class="kwrd">private</span> TextEngineNode parseEngineData(ByteArray bytes, <span class="kwrd">uint</span> depth)
+        {
+            <span class="rem">//set up the root node that is the top of the tree</span>
+            TextEngineNode rootNode = <span class="kwrd">new</span> TextEngineNode();
+            rootNode.type = TextEngineNode.TYPE_STRUCTURE;
+            rootNode.key = <span class="str">"root"</span>;
+
+            <span class="kwrd">long</span> tempPos = bytes.Position;
+
+            <span class="kwrd">while</span>(bytes.Position &lt; bytes.Length)
+            {
+                <span class="rem">//find a key</span>
+                String key = findKeyOrEnd(bytes); <span class="rem">//returns null if end of structure is found</span>
+                <span class="kwrd">if</span>(key == <span class="kwrd">null</span>)
+                {
+                    <span class="kwrd">return</span> rootNode;
+                }
+                
+                <span class="rem">//if we have reached this point we have found a key of the form "/keyname "</span>
+                <span class="rem">//what follows is either a value or a structure, the following code works out which it is</span>
+
+                Boolean isStructure = <span class="kwrd">false</span>;
+                
+                <span class="kwrd">byte</span> b = bytes.getByte();
+
+                <span class="rem">//depending on the value of the next byte, we know what is going to follow</span>
+                <span class="kwrd">switch</span>(b)
+                {
+                    <span class="kwrd">case</span> 0x20: <span class="rem">//if there is a space, then a value follows</span>
+                        <span class="rem">//little hack to get structures inside of arrays working</span>
+                        <span class="kwrd">if</span>(bytes.bytes[bytes.Position] == 0x5b &amp;&amp; bytes.bytes[bytes.Position + 1] == 0x0a)
+                        {
+                            Boolean stopBracketLoop = <span class="kwrd">false</span>;
+                            <span class="kwrd">while</span>(! stopBracketLoop)
+                            {
+                                TextEngineNode node2 = parseEngineData(bytes, depth + 1);
+                                node2.key = key;
+                                rootNode.structure.Add(node2);
+
+                                <span class="kwrd">if</span> (bytes.Position == bytes.Length)
+                                {
+                                    <span class="kwrd">return</span> rootNode; <span class="rem">//massive hack just to get it working, </span>
+                                    <span class="rem">//basically it just ends if we run out of data</span>
+                                }
+
+                                <span class="kwrd">while</span>(bytes.Position &lt; bytes.Length)
+                                {
+                                    b = bytes.getByte();
+                                    <span class="kwrd">if</span>(b != 0x09 &amp;&amp; b != 0x3e &amp;&amp; b != 0x0a) <span class="rem">//its a tab, so we can skip</span>
+                                    {
+                                        <span class="kwrd">if</span>(b == 0x5d)
+                                        {
+                                            stopBracketLoop = <span class="kwrd">true</span>;
+                                        }
+                                        <span class="kwrd">else</span> <span class="kwrd">if</span>(b == 0x3c || b == 0x2f)
+                                        {
+                                            <span class="rem">//we have a new structure or property</span>
+                                        }
+                                        <span class="kwrd">else</span>
+                                        {
+                                            <span class="kwrd">if</span> (bytes.Position == bytes.Length)
+                                            {
+                                                <span class="kwrd">return</span> rootNode; <span class="rem">//massive hack just to get it working, </span>
+                                                <span class="rem">//basically it just ends if we run out of data</span>
+                                            }
+                                            Console.Out.WriteLine(<span class="str">"unknown byte in middle of array at: "</span> + bytes.Position);
+                                        }
+                                        
+                                        <span class="kwrd">break</span>;
+                                    }
+                                }
+                                
+                            }
+                            
+                            <span class="kwrd">continue</span>;
+                        }
+                        <span class="kwrd">else</span>
+                        {
+                            isStructure = <span class="kwrd">false</span>;
+                        }
+                        
+                        <span class="kwrd">break</span>;
+                    <span class="kwrd">case</span> 0x0a: <span class="rem">//if its a new line, then we have found a structure</span>
+                        isStructure = <span class="kwrd">true</span>;
+                        <span class="kwrd">break</span>;
+                    <span class="kwrd">default</span>:
+                        Console.Out.WriteLine(<span class="str">"unknown value after key: 0x"</span> + b + <span class="str">", at: "</span> + bytes.Position);
+                        <span class="kwrd">break</span>;
+                }
+                
+                <span class="rem">//now we can build the node</span>
+                TextEngineNode node;
+                <span class="kwrd">if</span>(isStructure)
+                {
+                    <span class="rem">//if its a structure, we use recursion to build the node</span>
+                    node = parseEngineData(bytes, depth + 1);
+                    node.key = key;
+                }
+                <span class="kwrd">else</span>
+                {
+                    <span class="rem">//if its a value, we create a new node and fill in the value manually</span>
+                    node = <span class="kwrd">new</span> TextEngineNode();
+                    node.key = key;
+                    node.<span class="kwrd">value</span> = findValue(bytes);
+                    node.type = TextEngineNode.TYPE_VALUE;
+                }
+                
+                rootNode.structure.Add(node);
+            }
+            
+            <span class="kwrd">return</span> rootNode;
+        }
+
+        <span class="kwrd">private</span> String findValue(ByteArray bytes)
+        {
+            String <span class="kwrd">value</span> = <span class="str">""</span>;
+            
+            <span class="kwrd">byte</span> b;
+            <span class="kwrd">long</span> startPos;
+            <span class="kwrd">long</span> endPos;
+            
+            b = bytes.getByte();
+            
+            <span class="kwrd">switch</span>(b)
+            {
+                <span class="kwrd">case</span> 0x28: <span class="rem">//if the first byte is a bracket "(" then the value is a string</span>
+                    <span class="rem">//the bytes here are encoded with unicodeFFFE</span>
+                    <span class="rem">//needs to be tested / modified for text that contains brackets</span>
+                    
+                    <span class="rem">//need to skip 2 bytes as the first 2 bytes in a bracket are weird and i </span>
+                    <span class="rem">//dont understand them</span>
+                    startPos = bytes.Position + 2;
+                    
+                    <span class="kwrd">while</span>(bytes.Position &lt; bytes.Length)
+                    {
+                        b = bytes.getByte();
+                        <span class="kwrd">if</span>(b == 0x29)
+                        {
+                            <span class="kwrd">break</span>;
+                        }
+                    }
+                    
+                    endPos = bytes.Position;
+            
+                    bytes.Position = startPos;
+                    
+                    <span class="kwrd">value</span> = bytes.readComplexString((<span class="kwrd">uint</span>)(endPos - startPos - 1) / 2, <span class="str">"unicodeFFFE"</span>);
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> 0x5b: <span class="rem">//if the first byte is a square bracket "[" then the value is an array</span>
+                    b = bytes.getByte();
+                    
+                    <span class="kwrd">if</span>(b != 0x20) <span class="rem">//we have a structure inside an array</span>
+                    {
+                        <span class="rem">//trace("found structure inside array");</span>
+                        <span class="rem">//currentDataObject.structure.push(parseEngineData(bytes));</span>
+                        <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"cant parse structures inside arrays"</span>);
+                    }
+                    <span class="kwrd">else</span>
+                    {
+                        <span class="rem">//first we need to find where the array ends by looking for an end bracket "]"</span>
+                        startPos = bytes.Position;
+                        
+                        <span class="kwrd">while</span>(bytes.Position &lt; bytes.Length)
+                        {
+                            b = bytes.getByte();
+                            <span class="kwrd">if</span>(b == 0x5d)
+                            {
+                                <span class="kwrd">break</span>;
+                            }
+                        }
+                        
+                        endPos = bytes.Position;
+                        bytes.Position = startPos;
+                        <span class="kwrd">value</span> = bytes.getString((<span class="kwrd">int</span>)(endPos - startPos - 1));
+                        
+                        <span class="rem">//need to skip a byte to get over the end bracket</span>
+                        bytes.skipBytes(1);
+                    }
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> 0x74: <span class="rem">//represents the letter 't', check to see if this means 'true'</span>
+                    bytes.Position -= 1;
+                    
+                    <span class="kwrd">value</span> = bytes.getString(4);
+                    <span class="kwrd">if</span>(<span class="kwrd">value</span> != <span class="str">"true"</span>)
+                    {
+                        Console.Out.WriteLine(<span class="str">"unknown value starting with t: "</span> + <span class="kwrd">value</span>);
+                    }
+                    
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">case</span> 0x66: <span class="rem">//represents the lettre 'f', check to see if this means 'false'</span>
+                    bytes.Position -= 1;
+                    
+                    <span class="kwrd">value</span> = bytes.getString(5);
+                    <span class="kwrd">if</span>(<span class="kwrd">value</span> != <span class="str">"false"</span>)
+                    {
+                        Console.Out.WriteLine(<span class="str">"unknown value starting with f: "</span> + <span class="kwrd">value</span>);
+                    }
+                    
+                    <span class="kwrd">break</span>;
+                <span class="rem">//look for numbers</span>
+                <span class="kwrd">case</span> 46: <span class="rem">//for numbers that start with a .</span>
+                <span class="kwrd">case</span> 45: <span class="rem">//minus numbers</span>
+                <span class="kwrd">case</span> 48: <span class="rem">//0</span>
+                <span class="kwrd">case</span> 49:
+                <span class="kwrd">case</span> 50:
+                <span class="kwrd">case</span> 51:
+                <span class="kwrd">case</span> 52:
+                <span class="kwrd">case</span> 53:
+                <span class="kwrd">case</span> 54:
+                <span class="kwrd">case</span> 55:
+                <span class="kwrd">case</span> 56:
+                <span class="kwrd">case</span> 57: <span class="rem">//9</span>
+                    startPos = bytes.Position + -1;
+                    
+                    <span class="kwrd">while</span>(bytes.Position &lt; bytes.Length)
+                    {
+                        b = bytes.getByte();
+                        <span class="kwrd">if</span>(b == 0x0a)
+                        {
+                            <span class="kwrd">break</span>;
+                        }
+                    }
+                    
+                    endPos = bytes.Position;
+            
+                    bytes.Position = startPos;
+                    <span class="kwrd">value</span> = bytes.getString((<span class="kwrd">int</span>)(endPos - startPos - 1));
+                    <span class="kwrd">break</span>;
+                <span class="kwrd">default</span>:
+                    Console.Out.WriteLine(<span class="str">"unknown value type: "</span> + b + <span class="str">", at: "</span> + bytes.Position);
+                    <span class="kwrd">break</span>;
+            }
+            
+            <span class="kwrd">return</span> <span class="kwrd">value</span>;
+        }
+
+        <span class="rem">//looks for the next key, if it cant find one it returns null</span>
+        <span class="kwrd">private</span> String findKeyOrEnd(ByteArray bytes)
+        {
+            <span class="kwrd">byte</span> b;
+            <span class="kwrd">while</span>(bytes.Position &lt; bytes.Length)
+            {
+                b = bytes.getByte();
+                <span class="kwrd">if</span>(b == 0x2f) <span class="rem">//looks for a forward slash</span>
+                {
+                    <span class="kwrd">break</span>;
+                }
+                <span class="kwrd">else</span> <span class="kwrd">if</span>(b == 0x3e &amp;&amp; bytes.bytes[bytes.Position] == 0x3e)
+                {
+                    <span class="rem">//if we have hit here it means we have found the end of a structure</span>
+                    <span class="kwrd">return</span> <span class="kwrd">null</span>;
+                }
+            }
+            
+            <span class="rem">//if we have hit here we have found a key at bytes.position</span>
+            <span class="kwrd">long</span> startPos = bytes.Position;
+            
+            <span class="rem">//look for the end of a key, denoted by a space, or new line</span>
+            <span class="kwrd">while</span>(bytes.Position &lt; bytes.Length)
+            {
+                b = bytes.getByte();
+                <span class="kwrd">if</span>(b == 0x20 || b == 0x0a)
+                {
+                    <span class="kwrd">break</span>;
+                }
+            }
+            
+            <span class="kwrd">long</span> endPos = bytes.Position;
+            
+            <span class="rem">//using the start and end positions of the key, we can get the length, and therefore the data</span>
+            bytes.Position = startPos;
+            String key = bytes.getString((<span class="kwrd">int</span>)(endPos - startPos - 1));
+            
+            <span class="kwrd">return</span> key;
+        }
+
+        <span class="kwrd">internal</span> <span class="kwrd">void</span> parseImageChannelData(ByteArray bytes)
+        {
+            Console.Out.WriteLine(<span class="str">"layer: "</span> + name);
+
+            <span class="rem">//dont want to render folders or invalid bounds</span>
+            <span class="kwrd">if</span> (type != Layer.TYPE_NORMAL || bottom &lt;= top || right &lt;= left)
+            {
+                <span class="kwrd">return</span>;
+            }
+            
+            image = <span class="kwrd">new</span> Bitmap(right - left, bottom - top, PixelFormat.Format32bppArgb);
+
+            <span class="rem">//cycle through the layers, parsing the bytes, and decoding if necessary</span>
+            <span class="kwrd">foreach</span>(LayerChannelData channel <span class="kwrd">in</span> channels)
+            {
+                <span class="rem">//get the next channel pos, so if something goes wrong parsing</span>
+                <span class="rem">//this channel, it wont screw up the next one</span>
+                <span class="kwrd">uint</span> nextChannelPos = (<span class="kwrd">uint</span>)(bytes.Position + channel.channelDataLength);
+
+                <span class="kwrd">if</span> (channel.ID &lt; -1)
+                {
+                    <span class="rem">//skipping user supplied masks</span>
+                    bytes.Position = nextChannelPos;
+                    <span class="kwrd">continue</span>;
+                }
+                
+                <span class="rem">//lets hope bytes.position is in the right place</span>
+                <span class="kwrd">uint</span> compressionMethod = bytes.getUI16();
+
+                <span class="rem">//if it needs decompressing</span>
+                <span class="kwrd">switch</span>(compressionMethod)
+                {
+                    <span class="kwrd">case</span> 0:
+                        <span class="rem">//not compressed</span>
+                        <span class="rem">//get the data and store it in the individual channel objects</span>
+                        <span class="rem">//-2 is for the 2 bytes taken up by the compression type</span>
+                        channel.data = bytes.getBytes((<span class="kwrd">uint</span>)(image.Width * image.Height));
+                        channel.data.Position = 0;
+                        <span class="kwrd">break</span>;
+                    <span class="kwrd">case</span> 1:
+                        <span class="rem">//rle</span>
+                        channel.data = <span class="kwrd">new</span> ByteArray(<span class="kwrd">new</span> <span class="kwrd">byte</span>[0]);
+                        
+                        <span class="rem">//each scan line is compressed seperately, so we need to get the </span>
+                        <span class="rem">//length of each encoded line</span>
+                        List&lt;<span class="kwrd">uint</span>&gt; lineLengths = <span class="kwrd">new</span> List&lt;<span class="kwrd">uint</span>&gt;(image.Height);
+                        
+                        <span class="rem">//then we can cycle though each line and decode it</span>
+                        <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0;i &lt; image.Height;++i) 
+                        {
+                            lineLengths.Add(bytes.getUI16());
+                        }
+                        
+                        <span class="rem">//now that the lines have been decoded, we can write them back to </span>
+                        <span class="rem">//the channel</span>
+                        MemoryStream data = <span class="kwrd">new</span> MemoryStream();
+                        <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0;i &lt; image.Height;++i) 
+                        {
+                            ByteArray line = bytes.getBytes(lineLengths[i]);
+                            <span class="kwrd">byte</span>[] unrle = ByteArray.unRLE(line);
+                            data.Write(unrle, 0, unrle.Length);
+                        }
+
+                        channel.data = <span class="kwrd">new</span> ByteArray(data.ToArray());
+
+                        <span class="kwrd">break</span>;
+                    <span class="kwrd">case</span> 2:
+                    <span class="kwrd">case</span> 3:
+                        <span class="rem">//cant handle these compression methods, </span>
+                        <span class="rem">//going to skip for now</span>
+                        <span class="kwrd">return</span>;
+                }
+                
+                <span class="rem">//just in case the rle doesnt reset the position properly</span>
+                channel.data.Position = 0;
+                
+                bytes.Position = nextChannelPos;
+            }
+
+            <span class="rem">//will be null if it doesnt exist</span>
+            LayerChannelData alphaChannel = getChannel(LayerChannelData.TRANSPARENCY_MASK);
+            
+            LayerChannelData redChannel = getChannel(LayerChannelData.RED);
+            LayerChannelData greenChannel = getChannel(LayerChannelData.GREEN);
+            LayerChannelData blueChannel = getChannel(LayerChannelData.BLUE);
+            
+            <span class="kwrd">for</span>(<span class="kwrd">uint</span> j = 0;j &lt; image.Height;j++)
+            {
+                <span class="kwrd">for</span>(<span class="kwrd">uint</span> k = 0;k &lt; image.Width;k++)
+                {                    
+                    <span class="rem">//if there is alpha we have to use setPixel32 as there are 4 bytes </span>
+                    <span class="rem">//to worry about</span>
+                    <span class="kwrd">if</span> (alphaChannel != <span class="kwrd">null</span>)
+                    {
+                        image.SetPixel((<span class="kwrd">int</span>)k, (<span class="kwrd">int</span>)j, Color.FromArgb(alphaChannel.data.getByte(),
+                                                            redChannel.data.getByte(),
+                                                            greenChannel.data.getByte(),
+                                                            blueChannel.data.getByte()));
+                    }
+                    <span class="kwrd">else</span>
+                    {
+                        image.SetPixel((<span class="kwrd">int</span>)k, (<span class="kwrd">int</span>)j, Color.FromArgb(redChannel.data.getByte(),
+                                                            greenChannel.data.getByte(),
+                                                            blueChannel.data.getByte()));
+                    }
+                }
+            }
+
+            <span class="rem">//now sort out out the mask, cant do masks very well</span>
+            <span class="kwrd">if</span>(mask != <span class="kwrd">null</span> &amp;&amp; mask.right &gt; mask.left &amp;&amp; mask.top &lt; mask.bottom)
+            {
+                <span class="rem">//this represents the bounds of the image</span>
+                Rectangle realRect = <span class="kwrd">new</span> Rectangle(left, top, right - left, bottom - top);
+                
+                <span class="rem">//this represents the bounds of the mask</span>
+                Rectangle maskRect = <span class="kwrd">new</span> Rectangle(mask.left, mask.top, mask.right - mask.left, mask.bottom - mask.top);
+                
+                <span class="rem">//we combine them to get the new bounds</span>
+                Rectangle insideRect = <span class="kwrd">new</span> Rectangle();
+                insideRect.X = Math.Max(realRect.X, maskRect.X);
+                insideRect.Y = Math.Max(realRect.Y, maskRect.Y);
+                insideRect.Width =  Math.Min(realRect.Right, maskRect.Right) - insideRect.X;
+                insideRect.Height =  Math.Min(realRect.Bottom, maskRect.Bottom) - insideRect.Y;
+
+                image = image.Clone(insideRect, PixelFormat.Format32bppArgb);
+                left = insideRect.X;
+                right = insideRect.Right;
+                top = insideRect.Y;
+                bottom = insideRect.Bottom;
+            }
+        }
+
+        <span class="rem">//given an id, corresponding to LayerChannelData.RED etc,</span>
+        <span class="rem">//it will return the layer channel data object if it exists</span>
+        <span class="kwrd">public</span> LayerChannelData getChannel(<span class="kwrd">int</span> channelID)
+        {
+            <span class="kwrd">return</span> channels.First(channel =&gt; channel.ID == channelID);
+        }
+    }
+}
+</pre></body></html>

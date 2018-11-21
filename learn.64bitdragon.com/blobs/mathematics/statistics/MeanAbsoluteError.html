@@ -1,0 +1,76 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Definition</div>
+            The mean absolute error (mae) is a metric for determining the similarity between two sets.
+            <br />
+            <br />
+            The error between two numbers is simply the difference between them. The absolute error is the absolute difference. To find the mean absolute error, you must find the absolute error between corresponding values in the sets, and then find the mean of those errors.
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            Find the mean absolute error of the following two sets of numbers:
+            <br />
+            <p class="exampleData equation">
+                S1 = [2, 5, 9, 2]
+            </p>
+            <p class="exampleData equation">
+                S2 = [6, 3, 6, 1]
+            </p>
+            <br />
+            <ol class="exampleSteps">
+                <li>
+                    First we calculate the differences between these numbers:
+                    <p class="equation">
+                        D = [2 - 6, 5 - 3, 9 - 6, 2 - 1]
+                    </p>
+                    <p class="equation">
+                        D = [-4, 2, 3, 1]
+                    </p>
+                </li>
+                <li>
+                    Now we must make these numbers absolute:
+                    <p class="equation">
+                        D = [4, 2, 3, 1]
+                    </p>
+                </li>
+                <li>
+                    Finally, we find the mean of these numbers:
+                    <p class="equation">
+                        mae = (4 + 2 + 3 + 1) / 4
+                    </p>
+                    <p class="equation">
+                        mae = 10 / 4
+                    </p>
+                    <p class="equation">
+                        mae = 2.5
+                    </p>
+                </li>
+            </ol>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Mathematical Definition</div>
+            <img style="padding:15px;" src="/images/equations/mae.png" />
+            <br />
+            LaTeX: <code>mae = (\frac{1}{n})\sum_{i=1}^{n}\left | y_{i} - x_{i} \right |</code>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+<pre>
+import sklearn.metrics
+
+S1 = [2, 5, 9, 2]
+S2 = [6, 3, 6, 1]
+
+mae = sklearn.metrics.mean_absolute_error(S1, S2)
+print(mae)
+</pre>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,87 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    Bit Shifting is an operation which shifts bits.
+                </li>
+                <li>
+                    The bits within bytes can be shifted either left or right, by a specified amount.
+                </li>
+                <li>
+                    Bits maybe lost if their index is shifted outside the range of the integer.
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Left Shifting</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    When left shifting, we are adding 0's to the right edge of the integer, moving existing bits left to accomodate this.
+                </li>
+                <li>
+                    The left shift operator is <code><<</code>. It is a binary operator in which its first parameter is the integer you want to shift, and the second parameter is the amount you want to shift by.
+                </li>
+                <li>
+                    Example:
+                    <pre>
+a      = 0011
+a << 1 = 0110
+</pre>
+                </li>
+                <li>
+                    Code:
+                    <pre>
+def print_bits(i):
+    print(bin(i)[2:].zfill(4))
+
+
+a = int('0011', 2)
+print_bits(a)
+
+aShifted = a << 1
+print_bits(aShifted)
+</pre>
+                    In Python, the size of an integer is not fixed, and so bits are not lost no matter how much you shift by. In other languages where it is fixed, shifting a bit beyond the size of the integer will mean the bit is lost.
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Right Shifting</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    When right shifting, we are adding 0's to the left edge of the integer, moving existing bits right to accomodate this.
+                </li>
+                <li>
+                    The right shift operator is <code>>></code>. It is also a binary operator in which its first parameter is the integer you want to shift, and the second parameter is the amount you want to shift by.
+                </li>
+                <li>
+                    Example:
+                    <pre>
+a      = 0011
+a >> 1 = 0001
+</pre>
+                </li>
+                <li>
+                    Code:
+                    <pre>
+def print_bits(i):
+    print(bin(i)[2:].zfill(4))
+
+
+a = int('0011', 2)
+print_bits(a)
+
+aShifted = a >> 1
+print_bits(aShifted)
+</pre>
+                </li>
+            </ul>
+        </section>
+    </div>
+</div>

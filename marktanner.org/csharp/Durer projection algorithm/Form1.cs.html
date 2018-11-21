@@ -1,0 +1,153 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.ComponentModel;
+<span class="kwrd">using</span> System.Data;
+<span class="kwrd">using</span> System.Drawing;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+<span class="kwrd">using</span> System.Windows.Forms;
+<span class="kwrd">using</span> System.Windows.Media.Media3D;
+
+<span class="kwrd">namespace</span> Dürer_projection_algorithm
+{
+    <span class="kwrd">public</span> <span class="kwrd">partial</span> <span class="kwrd">class</span> Form1 : Form
+    {
+        <span class="kwrd">public</span> Form1()
+        {
+            InitializeComponent();
+
+            List&lt;Point3D&gt; vertices = <span class="kwrd">new</span> List&lt;Point3D&gt;();
+            List&lt;Edge&gt; edges = <span class="kwrd">new</span> List&lt;Edge&gt;();
+
+            generateUnitCube(<span class="kwrd">ref</span> vertices, <span class="kwrd">ref</span> edges);
+            translateVertices(<span class="kwrd">ref</span> vertices, <span class="kwrd">new</span> Point3D(0, 0, 3));
+
+            Image canvas = (Image)<span class="kwrd">new</span> Bitmap(200, 200);
+            Graphics g = Graphics.FromImage(canvas);
+
+            List&lt;PointF&gt; points = createDurerProjection(vertices, 200, <span class="kwrd">new</span> DoubleRectangle(-0.5, -0.5, 1, 1));
+
+            Pen pen = <span class="kwrd">new</span> Pen(Color.Black, 2);
+
+            <span class="kwrd">foreach</span>(Edge edge <span class="kwrd">in</span> edges)
+            {
+                g.DrawLine(pen, points[edge.startIndex].X, points[edge.startIndex].Y, points[edge.endIndex].X, points[edge.endIndex].Y);
+            }
+
+            pictureBox1.Image = canvas;
+        }
+        
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// converts points from 3d space to 2d space using the durer algorithm</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="rem">/// &lt;param name="vertices"&gt;the vertices in 3d space&lt;/param&gt;</span>
+        <span class="rem">/// &lt;param name="scale"&gt;the scale to apply to the the 2d space&lt;/param&gt;</span>
+        <span class="rem">/// &lt;param name="frame"&gt;the minimum and maximum bounds of the frame&lt;/param&gt;</span>
+        <span class="rem">/// &lt;returns&gt;the points in 2d space, minimum point being 0 and maximum being 100&lt;/returns&gt;</span>
+        <span class="kwrd">private</span> List&lt;PointF&gt; createDurerProjection(List&lt;Point3D&gt; vertices, <span class="kwrd">double</span> scale, DoubleRectangle frame)
+        {
+            List&lt;PointF&gt; points = <span class="kwrd">new</span> List&lt;PointF&gt;();
+
+            <span class="kwrd">foreach</span>(Point3D vertex <span class="kwrd">in</span> vertices)
+            {
+                <span class="kwrd">double</span> xPrime = vertex.X / vertex.Z;
+                <span class="kwrd">double</span> yPrime = vertex.Y / vertex.Z;
+
+                PointF p = <span class="kwrd">new</span> PointF();
+                p.X = (<span class="kwrd">int</span>)(scale * (1 - (xPrime - frame.left) / frame.width));
+                p.Y = (<span class="kwrd">int</span>)(scale * (yPrime - frame.top) / frame.height);
+                points.Add(p);
+            }
+
+            <span class="kwrd">return</span> points;
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> translateVertices(<span class="kwrd">ref</span> List&lt;Point3D&gt; vertices, Point3D amount)
+        {
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; vertices.Count;i++ )
+            {
+                vertices[i] = <span class="kwrd">new</span> Point3D(vertices[i].X + amount.X, vertices[i].Y + amount.Y, vertices[i].Z + amount.Z);
+            }
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> generateUnitCube(<span class="kwrd">ref</span> List&lt;Point3D&gt; vertices, <span class="kwrd">ref</span> List&lt;Edge&gt; edges)
+        {
+            vertices.Add(<span class="kwrd">new</span> Point3D(-0.5, -0.5, -0.5));
+            vertices.Add(<span class="kwrd">new</span> Point3D(-0.5, 0.5, -0.5));
+            vertices.Add(<span class="kwrd">new</span> Point3D(0.5, 0.5, -0.5));
+            vertices.Add(<span class="kwrd">new</span> Point3D(0.5, -0.5, -0.5));
+            vertices.Add(<span class="kwrd">new</span> Point3D(-0.5, -0.5, 0.5));
+            vertices.Add(<span class="kwrd">new</span> Point3D(-0.5, 0.5, 0.5));
+            vertices.Add(<span class="kwrd">new</span> Point3D( 0.5, 0.5, 0.5 ));
+            vertices.Add(<span class="kwrd">new</span> Point3D( 0.5, -0.5, 0.5));
+
+            edges.Add(<span class="kwrd">new</span> Edge(0, 1));
+            edges.Add(<span class="kwrd">new</span> Edge(1, 2));
+            edges.Add(<span class="kwrd">new</span> Edge(2, 3));
+            edges.Add(<span class="kwrd">new</span> Edge(3, 0));
+            edges.Add(<span class="kwrd">new</span> Edge(0, 4));
+            edges.Add(<span class="kwrd">new</span> Edge(1, 5));
+            edges.Add(<span class="kwrd">new</span> Edge(2, 6));
+            edges.Add(<span class="kwrd">new</span> Edge(3, 7));
+            edges.Add(<span class="kwrd">new</span> Edge(4, 5));
+            edges.Add(<span class="kwrd">new</span> Edge(5, 6));
+            edges.Add(<span class="kwrd">new</span> Edge(6, 7));
+            edges.Add(<span class="kwrd">new</span> Edge(7, 4));
+        }
+    }
+
+    <span class="kwrd">class</span> DoubleRectangle
+    {
+        <span class="kwrd">public</span> <span class="kwrd">double</span> x = 0;
+        <span class="kwrd">public</span> <span class="kwrd">double</span> y = 0;
+        <span class="kwrd">public</span> <span class="kwrd">double</span> width = 0;
+        <span class="kwrd">public</span> <span class="kwrd">double</span> height = 0;
+
+        <span class="kwrd">public</span> DoubleRectangle(<span class="kwrd">double</span> x, <span class="kwrd">double</span> y, <span class="kwrd">double</span> width, <span class="kwrd">double</span> height)
+        {
+            <span class="kwrd">this</span>.x = x;
+            <span class="kwrd">this</span>.y = y;
+            <span class="kwrd">this</span>.width = width;
+            <span class="kwrd">this</span>.height = height;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">double</span> left
+        {
+            get { <span class="kwrd">return</span> x; }
+            set { width = right - <span class="kwrd">value</span>; x = <span class="kwrd">value</span>; }
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">double</span> top
+        {
+            get { <span class="kwrd">return</span> y; }
+            set { height = bottom - <span class="kwrd">value</span>; y = <span class="kwrd">value</span>; }
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">double</span> right
+        {
+            get { <span class="kwrd">return</span> x + width; }
+            set { width = <span class="kwrd">value</span> - x; }
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">double</span> bottom
+        {
+            get { <span class="kwrd">return</span> y + height; }
+            set { height = <span class="kwrd">value</span> - y; }
+        }
+    }
+
+    <span class="kwrd">class</span> Edge
+    {
+        <span class="kwrd">public</span> <span class="kwrd">int</span> startIndex;
+        <span class="kwrd">public</span> <span class="kwrd">int</span> endIndex;
+
+        <span class="kwrd">public</span> Edge(<span class="kwrd">int</span> startIndex, <span class="kwrd">int</span> endIndex)
+        {
+            <span class="kwrd">this</span>.startIndex = startIndex;
+            <span class="kwrd">this</span>.endIndex = endIndex;
+        }
+    }
+}
+</pre></body></html>

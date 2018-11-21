@@ -1,0 +1,58 @@
+<html><head><link rel="stylesheet" type="text/css" href=" /csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> Emgu.CV;
+<span class="kwrd">using</span> Emgu.CV.CvEnum;
+<span class="kwrd">using</span> Emgu.CV.Structure;
+<span class="kwrd">using</span> Emgu.CV.UI;
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Drawing;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> image_thresholding
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            Mat colorImage = <span class="kwrd">new</span> Mat(<span class="str">@"./fruit.jpg"</span>, LoadImageType.Color);
+            
+            <span class="rem">//convert the image to hsv</span>
+            Mat hsvImage = <span class="kwrd">new</span> Mat();
+            CvInvoke.CvtColor(colorImage, hsvImage, ColorConversion.Bgr2Hsv);
+            
+            <span class="rem">//set up our lower and upper bounds for our orange colour</span>
+            UMat lowerBorder = <span class="kwrd">new</span> UMat(hsvImage.Rows, hsvImage.Cols, DepthType.Cv8U, 3);
+            Hsv lowOrange = <span class="kwrd">new</span> Hsv(0, 180, 200);
+            lowerBorder.SetTo(lowOrange.MCvScalar);
+
+            UMat upperBorder = <span class="kwrd">new</span> UMat(hsvImage.Rows, hsvImage.Cols, DepthType.Cv8U, 3);
+            Hsv highOrange = <span class="kwrd">new</span> Hsv(25, 255, 255);
+            upperBorder.SetTo(highOrange.MCvScalar);
+            
+            <span class="rem">//find only pixels that are between the borders</span>
+            Mat mask = <span class="kwrd">new</span> Mat();
+            CvInvoke.InRange(hsvImage, lowerBorder, upperBorder, mask);
+
+            lowerBorder.Dispose();
+            upperBorder.Dispose();
+            hsvImage.Dispose();
+
+            <span class="rem">//convert bgr to gray, but keeping a depth of 3</span>
+            Mat grayImage = <span class="kwrd">new</span> Mat();
+            CvInvoke.CvtColor(colorImage, grayImage, ColorConversion.Bgr2Gray);
+            CvInvoke.CvtColor(grayImage, grayImage, ColorConversion.Gray2Bgr);
+
+            <span class="rem">//copy only the orange pixels onto the gray image</span>
+            colorImage.CopyTo(grayImage, mask);
+
+            colorImage.Dispose();
+
+            ImageViewer.Show(grayImage, <span class="str">"Image Thresholding"</span>);
+
+            grayImage.Dispose();
+        }
+    }
+}
+</pre></body></html>

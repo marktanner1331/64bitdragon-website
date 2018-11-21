@@ -1,0 +1,112 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Net;
+<span class="kwrd">using</span> System.Net.Sockets;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> udp_proxy
+{
+    <span class="kwrd">class</span> Program
+    {
+       <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            UdpProxy UdpRedirect = <span class="kwrd">new</span> UdpProxy() { address = <span class="str">"0.0.0.0"</span>, Port = 12222 };
+            Thread _Thread = <span class="kwrd">new</span> Thread(UdpRedirect.Connect);
+            _Thread.Name = <span class="str">"UDP"</span>;
+            _Thread.Start();
+            TcpProxy _TcpRedirect = <span class="kwrd">new</span> TcpProxy(<span class="str">"0.0.0.0"</span>, 12222);            
+        }
+    }
+    <span class="kwrd">class</span> UdpProxy
+    {
+        <span class="kwrd">public</span> <span class="kwrd">string</span> address;
+        <span class="kwrd">public</span> <span class="kwrd">int</span> Port;
+
+        <span class="kwrd">public</span> <span class="kwrd">void</span> Connect()
+        {
+            UdpClient UdpClient = <span class="kwrd">new</span> UdpClient(Port);
+            <span class="kwrd">int</span>? LocalPort = 372;
+            <span class="kwrd">while</span> (<span class="kwrd">true</span>)
+            {
+                IPEndPoint _IPEndPoint = <span class="kwrd">null</span>;
+                <span class="kwrd">byte</span>[] bytes = UdpClient.Receive(<span class="kwrd">ref</span> _IPEndPoint);
+                <span class="kwrd">bool</span> Local = IPAddress.IsLoopback(_IPEndPoint.Address);
+                <span class="kwrd">string</span> AddressToSend = <span class="kwrd">null</span>;
+                <span class="kwrd">int</span> PortToSend = 0;
+                <span class="kwrd">if</span> (Local)
+                {
+                    AddressToSend = address;
+                    PortToSend = Port;
+                }
+                <span class="kwrd">else</span>
+                {
+                    AddressToSend = <span class="str">"127.0.0.1"</span>;
+                    PortToSend = LocalPort.Value;
+                }
+                UdpClient.Send(bytes, bytes.Length, AddressToSend, PortToSend);
+            }
+        }
+    }
+    <span class="kwrd">class</span> TcpProxy
+    {
+        <span class="kwrd">public</span> TcpProxy(<span class="kwrd">string</span> address, <span class="kwrd">int</span> Port)
+        {
+            TcpListener TcpListener = <span class="kwrd">new</span> TcpListener(IPAddress.Any, 372);
+            TcpListener.Start();
+            <span class="kwrd">int</span> i = 0;
+            <span class="kwrd">while</span> (<span class="kwrd">true</span>)
+            {
+                i++;
+                TcpClient LocalSocket = TcpListener.AcceptTcpClient();
+                NetworkStream NetworkStreamLocal = LocalSocket.GetStream();
+
+                TcpClient RemoteSocket = <span class="kwrd">new</span> TcpClient(address, Port);
+                NetworkStream NetworkStreamRemote = RemoteSocket.GetStream();
+                Console.WriteLine(<span class="str">"connected"</span>);
+                Client RemoteClient = <span class="kwrd">new</span> Client(<span class="str">"remote"</span> + i)
+                {
+                    SendingNetworkStream = NetworkStreamLocal,
+                    ListenNetworkStream = NetworkStreamRemote,
+                    ListenSocket = RemoteSocket
+                };
+                Client _LocalClient = <span class="kwrd">new</span> Client(<span class="str">"local"</span> + i)
+                {
+                    SendingNetworkStream = NetworkStreamRemote,
+                    ListenNetworkStream = NetworkStreamLocal,
+                    ListenSocket = LocalSocket
+                };
+            }
+        }
+        <span class="kwrd">public</span> <span class="kwrd">class</span> Client
+        {
+            <span class="kwrd">public</span> TcpClient ListenSocket;
+            <span class="kwrd">public</span> NetworkStream SendingNetworkStream;
+            <span class="kwrd">public</span> NetworkStream ListenNetworkStream;
+            Thread thread;
+            <span class="kwrd">public</span> Client(<span class="kwrd">string</span> Name)
+            {
+                thread = <span class="kwrd">new</span> Thread(<span class="kwrd">new</span> ThreadStart(ThreadStartHander));
+                thread.Name = Name;
+                thread.Start();
+            }
+            <span class="kwrd">public</span> <span class="kwrd">void</span> ThreadStartHander()
+            {
+                Byte[] data = <span class="kwrd">new</span> <span class="kwrd">byte</span>[99999];
+                <span class="kwrd">while</span> (<span class="kwrd">true</span>)
+                {
+                    <span class="kwrd">if</span> (ListenSocket.Available &gt; 0)
+                    {
+                        <span class="kwrd">int</span> bytesReaded = ListenNetworkStream.Read(data, 0, ListenSocket.Available);
+                        SendingNetworkStream.Write(data, 0, bytesReaded);
+                    }
+                    Thread.Sleep(10);
+                }
+            }
+        }
+    }
+}
+</pre></body></html>

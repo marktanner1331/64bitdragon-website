@@ -1,0 +1,50 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/csharp.css" >
+</head>
+<body>
+<pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> generate_pi
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">int</span> numPoints = 1000000;
+            <span class="kwrd">int</span> numPointsInside = 0;
+
+            Random rand = <span class="kwrd">new</span> Random();
+
+            <span class="kwrd">for</span>(<span class="kwrd">int</span> i = 0;i &lt; numPoints;i++)
+            {
+                <span class="kwrd">double</span> x = rand.NextDouble();
+                <span class="kwrd">double</span> y = rand.NextDouble();
+
+                <span class="kwrd">if</span> (x * x + y * y &lt;= 1) 
+                {
+                    numPointsInside++;
+                }
+
+                <span class="rem">//pseudo random numbers always repeat, lets stop that</span>
+                <span class="kwrd">if</span>(i % 10000 == 0)
+                {
+                    rand = <span class="kwrd">new</span> Random();
+                }
+            }
+
+            <span class="kwrd">double</span> pi = 4.0 * (<span class="kwrd">double</span>)numPointsInside / (<span class="kwrd">double</span>)numPoints;
+
+            Console.WriteLine(pi);
+            Console.Read();
+        }
+    }
+}
+</pre>
+</body>
+</html>

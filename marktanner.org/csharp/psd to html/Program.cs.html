@@ -1,0 +1,842 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.IO;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+<span class="kwrd">using</span> System.Xml;
+
+<span class="kwrd">namespace</span> psd_importer
+{
+    <span class="kwrd">class</span> Program
+    { 
+        <span class="kwrd">private</span> ByteArray bytes;
+
+        <span class="kwrd">private</span> <span class="kwrd">string</span> signiture;
+        <span class="kwrd">private</span> <span class="kwrd">ushort</span> version;
+        <span class="kwrd">private</span> <span class="kwrd">ushort</span> numberOfChannels;
+        <span class="kwrd">private</span> <span class="kwrd">uint</span> height;
+        <span class="kwrd">private</span> <span class="kwrd">uint</span> width;
+        <span class="kwrd">private</span> <span class="kwrd">ushort</span> bitDepth;
+        <span class="kwrd">private</span> <span class="kwrd">ushort</span> colorMode;
+        <span class="kwrd">private</span> <span class="kwrd">uint</span> numberOfLayers;
+        <span class="kwrd">private</span> List&lt;Layer&gt; layers = <span class="kwrd">new</span> List&lt;Layer&gt;();
+        <span class="kwrd">private</span> List&lt;Layer&gt; topLevelLayers = <span class="kwrd">new</span> List&lt;Layer&gt;();
+
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">byte</span>[] data;
+
+            <span class="rem">//load the psd into memory</span>
+            <span class="kwrd">if</span> (args.Length == 1)
+            {
+                data = GetBytesFromFile(args[0]);
+            }
+            <span class="kwrd">else</span>
+            {
+                data = GetBytesFromFile(Directory.GetCurrentDirectory() + <span class="str">"/somepsd.psd"</span>);
+                <span class="rem">//data = GetBytesFromFile(Directory.GetCurrentDirectory() + "/test simple image.psd");</span>
+            }
+
+            <span class="rem">//using the program constructor so that the methods in the program class dont need to be static</span>
+            <span class="kwrd">new</span> Program(data);
+
+            Console.In.Read();
+        }
+
+        <span class="kwrd">public</span> Program(<span class="kwrd">byte</span>[] data)
+        {
+            bytes = <span class="kwrd">new</span> ByteArray(data);
+
+           <span class="rem">// try</span>
+           <span class="rem">// {</span>
+                parseHeader();
+                parseColorModeData();
+                parseImageResources();
+                parseLayersAndMasks();
+
+                <span class="rem">//now we have the layers, we can build the layer tree</span>
+                buildLayerTree();
+
+                <span class="kwrd">foreach</span> (Layer layer <span class="kwrd">in</span> topLevelLayers)
+                {
+                    printLayer(layer, <span class="str">""</span>);
+                }
+                
+                createHTML();
+                <span class="rem">//createPercentHTML();</span>
+
+                Console.Out.WriteLine(<span class="str">"finished parsing psd"</span>);
+         <span class="rem">//   }</span>
+         <span class="rem">//   catch (Exception e)</span>
+         <span class="rem">//   {</span>
+              <span class="rem">//  Console.Out.WriteLine(bytes.Position + ": " + e);</span>
+         <span class="rem">//   }</span>
+        }
+
+        <span class="rem">//converts the bounds of the layers to percentages</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> convertToPercentages()
+        {
+            <span class="kwrd">foreach</span> (Layer layer <span class="kwrd">in</span> layers)
+            {
+                layer.top = (<span class="kwrd">int</span>)((<span class="kwrd">float</span>)layer.top * 100 / (<span class="kwrd">float</span>)height);
+                layer.left = (<span class="kwrd">int</span>)((<span class="kwrd">float</span>)layer.left * 100 / (<span class="kwrd">float</span>)width);
+                layer.bottom = (<span class="kwrd">int</span>)((<span class="kwrd">float</span>)layer.bottom * 100 / (<span class="kwrd">float</span>)height);
+                layer.right = (<span class="kwrd">int</span>)((<span class="kwrd">float</span>)layer.right * 100 / (<span class="kwrd">float</span>)width);
+            }
+        }
+
+        <span class="rem">//outputs the psd as html in percentages</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> createPercentHTML()
+        {
+            Console.Out.WriteLine(<span class="str">"creating percent html"</span>);
+
+            convertToPercentages();
+
+            <span class="kwrd">string</span> folderName = Directory.GetCurrentDirectory() + <span class="str">"/output/"</span>;
+
+            <span class="rem">//create the folder based on the psd name</span>
+            Directory.CreateDirectory(folderName);
+
+            <span class="rem">//save the non text layers as jpegs</span>
+            <span class="kwrd">foreach</span> (Layer layer <span class="kwrd">in</span> layers)
+            {
+                <span class="kwrd">if</span> (layer.isTextLayer == <span class="kwrd">false</span>)
+                {
+                    <span class="kwrd">if</span> (layer.image != <span class="kwrd">null</span>)
+                    {
+                        <span class="kwrd">string</span> tempName = layer.name;
+
+                        <span class="kwrd">if</span> (File.Exists(folderName + layer.name + <span class="str">".jpg"</span>))
+                        {
+                            <span class="kwrd">ushort</span> i = 1;
+
+                            <span class="kwrd">while</span> (File.Exists(folderName + tempName + <span class="str">".jpg"</span>))
+                            {
+                                tempName = layer.name + <span class="str">"_"</span> + i;
+                                i++;
+                            }
+                        }
+
+                        layer.name = tempName;
+
+                        <span class="rem">//Console.Out.WriteLine("creating jpg: " + layer.name + ".jpg");</span>
+
+                        layer.image.Save(folderName + layer.name + <span class="str">".jpg"</span>);
+                    }
+                }
+            }
+
+            Console.Out.WriteLine(<span class="str">"generating html file"</span>);
+
+            <span class="rem">//now build the html</span>
+            <span class="kwrd">string</span> html = <span class="str">"&lt;html&gt;&lt;body&gt;"</span>;
+
+            <span class="kwrd">foreach</span> (Layer layer <span class="kwrd">in</span> layers)
+            {
+                <span class="kwrd">if</span> (layer.isTextLayer == <span class="kwrd">false</span>)
+                {
+                    <span class="kwrd">if</span> (layer.image != <span class="kwrd">null</span>)
+                    {
+                        html += <span class="str">"&lt;image src=\"./"</span> + layer.name + <span class="str">".jpg\" style=\"position:absolute;top:"</span> +
+                            layer.top + <span class="str">"%;left:"</span> + layer.left + <span class="str">"%;width:"</span> + (layer.right - layer.left) +
+                            <span class="str">"%;height:"</span> + (layer.bottom - layer.top) + <span class="str">"%;"</span>;
+
+                        <span class="kwrd">if</span> (layer.visible == <span class="kwrd">false</span>)
+                        {
+                            html += <span class="str">"display:none;"</span>;
+                        }
+                        <span class="kwrd">else</span> <span class="kwrd">if</span> (layer.opacity != 255)
+                        {
+                            <span class="kwrd">double</span> opacity = layer.opacity;
+                            opacity /= 255;
+                            html += <span class="str">"opacity:"</span> + opacity + <span class="str">";"</span>;
+                        }
+
+                        html += <span class="str">"\" /&gt;"</span>;
+                    }
+                }
+                <span class="kwrd">else</span>
+                {
+                    html += <span class="str">"&lt;div style=\"position:absolute;overflow:hidden;font-family:'"</span> + layer.fontName +
+                        <span class="str">"';font-size:"</span> + layer.fontSize + <span class="str">"px;top:"</span> +
+                            layer.top + <span class="str">"%;left:"</span> + layer.left + <span class="str">"%;width:"</span> + (layer.right - layer.left + 10) +
+                            <span class="str">"%;height:"</span> + (layer.bottom - layer.top + 10) + <span class="str">"%;\"&gt;"</span> + layer.text + <span class="str">"&lt;/div&gt;"</span>;
+                }
+            }
+
+            html += <span class="str">"&lt;/body&gt;&lt;/html&gt;"</span>;
+
+            html = PrintXML(html);
+
+            File.WriteAllText(folderName + <span class="str">"template.html"</span>, html);
+        }
+
+        <span class="rem">//outputs the psd as html</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> createHTML()
+        {
+            Console.Out.WriteLine(<span class="str">"creating html"</span>);
+
+            <span class="kwrd">string</span> folderName = Directory.GetCurrentDirectory() + <span class="str">"/test simple image/"</span>;
+
+            <span class="rem">//create the folder based on the psd name</span>
+            Directory.CreateDirectory(folderName);
+
+            <span class="rem">//save the non text layers as jpegs</span>
+            <span class="kwrd">foreach</span> (Layer layer <span class="kwrd">in</span> layers)
+            {
+                <span class="kwrd">if</span> (layer.isTextLayer == <span class="kwrd">false</span>)
+                {
+                    <span class="kwrd">if</span> (layer.image != <span class="kwrd">null</span>)
+                    {
+                        <span class="kwrd">string</span> tempName = layer.name;
+
+                        <span class="kwrd">if</span> (File.Exists(folderName + layer.name + <span class="str">".jpg"</span>))
+                        {
+                            <span class="kwrd">ushort</span> i = 1;
+
+                            <span class="kwrd">while</span> (File.Exists(folderName + tempName + <span class="str">".jpg"</span>))
+                            {
+                                tempName = layer.name + <span class="str">"_"</span> + i;
+                                i++;
+                            }
+                        }
+
+                        layer.name = tempName;
+
+                        <span class="rem">//Console.Out.WriteLine("creating jpg: " + layer.name + ".jpg");</span>
+
+                        layer.image.Save(folderName + layer.name + <span class="str">".jpg"</span>);
+                    }
+                }
+            }
+
+            Console.Out.WriteLine(<span class="str">"generating html file"</span>);
+
+            <span class="rem">//now build the html</span>
+            <span class="kwrd">string</span> html = <span class="str">"&lt;html&gt;&lt;body&gt;"</span>;
+
+            <span class="kwrd">foreach</span> (Layer layer <span class="kwrd">in</span> layers)
+            {
+                <span class="kwrd">if</span> (layer.isTextLayer == <span class="kwrd">false</span>)
+                {
+                    <span class="kwrd">if</span> (layer.image != <span class="kwrd">null</span>)
+                    {
+                        html += <span class="str">"&lt;image src=\"./"</span> + layer.name + <span class="str">".jpg\" style=\"position:absolute;top:"</span> +
+                            layer.top + <span class="str">"px;left:"</span> + layer.left + <span class="str">"px;width:"</span> + (layer.right - layer.left) +
+                            <span class="str">"px;height:"</span> + (layer.bottom - layer.top) + <span class="str">"px;"</span>;
+
+                        <span class="kwrd">if</span> (layer.visible == <span class="kwrd">false</span>)
+                        {
+                            html += <span class="str">"display:none;"</span>;
+                        }
+                        <span class="kwrd">else</span> <span class="kwrd">if</span> (layer.opacity != 255)
+                        {
+                            <span class="kwrd">double</span> opacity = layer.opacity;
+                            opacity /= 255;
+                            html += <span class="str">"opacity:"</span> + opacity + <span class="str">";"</span>;
+                        }
+
+                        html += <span class="str">"\" /&gt;"</span>;
+                    }
+                }
+                <span class="kwrd">else</span>
+                {
+                    html += <span class="str">"&lt;div style=\"position:absolute;overflow:hidden;font-family:'"</span> + layer.fontName + 
+                        <span class="str">"';font-size:"</span> + layer.fontSize + <span class="str">"px;top:"</span> +
+                            layer.top + <span class="str">"px;left:"</span> + layer.left + <span class="str">"px;width:"</span> + (layer.right - layer.left + 10) +
+                            <span class="str">"px;height:"</span> + (layer.bottom - layer.top + 10) + <span class="str">"px;\"&gt;"</span> + layer.text + <span class="str">"&lt;/div&gt;"</span>; 
+                }
+            }
+
+            html += <span class="str">"&lt;/body&gt;&lt;/html&gt;"</span>;
+
+            html = PrintXML(html);
+
+            File.WriteAllText(folderName + <span class="str">"template.html"</span>, html);
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">static</span> String PrintXML(String XML)
+        {
+            String Result = <span class="str">""</span>;
+
+            MemoryStream mStream = <span class="kwrd">new</span> MemoryStream();
+            XmlTextWriter writer = <span class="kwrd">new</span> XmlTextWriter(mStream, Encoding.Unicode);
+            XmlDocument document = <span class="kwrd">new</span> XmlDocument();
+
+            <span class="kwrd">try</span>
+            {
+                <span class="rem">// Load the XmlDocument with the XML.</span>
+                document.LoadXml(XML);
+
+                writer.Formatting = Formatting.Indented;
+
+                <span class="rem">// Write the XML into a formatting XmlTextWriter</span>
+                document.WriteContentTo(writer);
+                writer.Flush();
+                mStream.Flush();
+
+                <span class="rem">// Have to rewind the MemoryStream in order to read</span>
+                <span class="rem">// its contents.</span>
+                mStream.Position = 0;
+
+                <span class="rem">// Read MemoryStream contents into a StreamReader.</span>
+                StreamReader sReader = <span class="kwrd">new</span> StreamReader(mStream);
+
+                <span class="rem">// Extract the text from the StreamReader.</span>
+                String FormattedXML = sReader.ReadToEnd();
+
+                Result = FormattedXML;
+            }
+            <span class="kwrd">catch</span> (XmlException)
+            {
+                <span class="kwrd">return</span> XML;
+            }
+
+            mStream.Close();
+            writer.Close();
+
+            <span class="kwrd">return</span> Result;
+        }
+
+        <span class="rem">//arranging the layers into a tree by filling in layer.parentLayer and layer.children</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> buildLayerTree()
+        {
+            Console.Out.WriteLine(<span class="str">"building layer tree"</span>);
+
+            <span class="rem">//ifs its top level, we need to add it to the topLevelLayers vector rather than a layer.children</span>
+            Boolean isTopLevel = <span class="kwrd">true</span>;
+            
+            <span class="rem">//as the folders are recursive. we need a reference the current folder we are filling in</span>
+            Layer currentFolder = <span class="kwrd">null</span>;
+            
+            <span class="rem">//running through the array backwards due to how folders are ordered in a psd</span>
+            <span class="kwrd">for</span>(<span class="kwrd">int</span> i = layers.Count - 1;i &gt; -1;i--)
+            {
+                <span class="rem">//we already have all the layers in the 'layers' vector.</span>
+                Layer layer = layers[i];
+                
+                <span class="rem">//if its a top level, add it to toplevelLayers, else add it to the current folder</span>
+                <span class="kwrd">if</span>(isTopLevel)
+                {
+                    topLevelLayers.Add(layer);
+                }
+                <span class="kwrd">else</span>
+                {
+                    currentFolder.children.Add(layer);
+                    <span class="rem">//layers know about their parent, which breaks a few rules, but it never really</span>
+                    <span class="rem">//uses its parent</span>
+                    layer.parentLayer = currentFolder;
+                }
+                
+                <span class="rem">//depending on the type of layer, we may need to update parentFolder and isTopLevel</span>
+                <span class="kwrd">switch</span>(layer.type)
+                {
+                    <span class="kwrd">case</span> Layer.TYPE_NORMAL:
+                        <span class="rem">//dont need to do anything</span>
+                        <span class="kwrd">break</span>;
+                    <span class="kwrd">case</span> Layer.TYPE_FOLDER_CLOSED:
+                    <span class="kwrd">case</span> Layer.TYPE_FOLDER_OPEN:
+                    
+                        <span class="kwrd">if</span>(layer.left != 0)
+                        {
+                            <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"found layer with some offset"</span>);
+                        }
+
+                        <span class="rem">//there is a new parent folder</span>
+                        currentFolder = layer;
+                        isTopLevel = <span class="kwrd">false</span>;
+                        <span class="kwrd">break</span>;
+                    <span class="kwrd">case</span> Layer.TYPE_HIDDEN:
+                        <span class="kwrd">if</span>(layer.left != 0)
+                        {
+                            <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"found layer with some offset"</span>);
+                        }
+                        <span class="rem">//because we have done everything backwards, we need to reverse the array to keep the depths right</span>
+                        <span class="kwrd">if</span> (currentFolder != <span class="kwrd">null</span>)
+                        {
+                            currentFolder.children.Reverse();
+                        }
+                        <span class="kwrd">else</span>
+                        {
+                            <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"adding layer to null folder"</span>);
+                        }
+                        
+                        <span class="rem">//the offset information for the folder is stored in the layer group</span>
+                        <span class="rem">//so move it to the folder</span>
+                        <span class="rem">//currentFolder.left = layer.left;</span>
+                        <span class="rem">//currentFolder.right = layer.right;</span>
+                        <span class="rem">//currentFolder.top = layer.top;</span>
+                        <span class="rem">//currentFolder.bottom = layer.bottom;</span>
+                        
+                        <span class="rem">//the current folder has closed, so we switch to its parent folder</span>
+                        currentFolder = currentFolder.parentLayer;
+                        
+                        <span class="rem">//we have hit the top level, (top level layers dont have parents)</span>
+                        <span class="kwrd">if</span>(currentFolder == <span class="kwrd">null</span>)
+                        {
+                            isTopLevel = <span class="kwrd">true</span>;
+                        }
+                        <span class="kwrd">break</span>;
+                }
+            }
+            
+            <span class="rem">//and finally reverse the top level layer, could have used unshift here. but i reckon this is more efficient</span>
+            topLevelLayers.Reverse();
+        }
+
+        <span class="rem">//a simple function that traces the relevant information about a layer, and then recurs</span>
+        <span class="rem">//to trace its children</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> printLayer(Layer layer, <span class="kwrd">string</span> indent)
+        {
+            Console.Out.WriteLine(indent + <span class="str">"layer name: "</span> + layer.name + <span class="str">" textLayer: "</span> + layer.isTextLayer);
+            
+            <span class="rem">//and now cycle the through the children and trace them</span>
+            <span class="kwrd">foreach</span>(Layer childLayer <span class="kwrd">in</span> layer.children)
+            {
+                printLayer(childLayer, indent + <span class="str">"    "</span>);
+            }
+        }
+
+        <span class="rem">//the header contains all the basic information for the psd, such as its size</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseHeader()
+        {
+            Console.Out.WriteLine(<span class="str">"parsing header"</span>);
+
+            signiture = bytes.getString(4);
+            <span class="kwrd">if</span> (signiture != <span class="str">"8BPS"</span>)
+            {
+                <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"Incorrect PSD signiture: "</span> + signiture);
+            }
+            traceProperty(<span class="str">"signiture"</span>, signiture);
+
+            <span class="rem">//read the version</span>
+            version = bytes.getUI16();
+            <span class="kwrd">if</span> (version != 1)
+            {
+                <span class="kwrd">if</span> (version == 2)
+                {
+                    <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"PSB is not supported."</span>);
+                }
+                <span class="kwrd">else</span>
+                {
+                    <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"Unknown version: "</span> + version);
+                }
+            }
+            traceProperty(<span class="str">"version"</span>, version);
+
+            <span class="rem">//there are 6 reserved bytes that dont do anything</span>
+            bytes.skipBytes(6);
+
+            <span class="rem">//the number of color channels</span>
+            numberOfChannels = bytes.getUI16();
+            traceProperty(<span class="str">"number of channels"</span>, numberOfChannels);
+
+            <span class="rem">//the width and height of the canvas in pixels</span>
+            height = bytes.getUI32();
+            width = bytes.getUI32();
+            traceProperty(<span class="str">"width"</span>, width);
+            traceProperty(<span class="str">"height"</span>, height);
+
+            <span class="rem">//the number of bits per channel</span>
+            bitDepth = bytes.getUI16();
+            traceProperty(<span class="str">"bit depth"</span>, bitDepth);
+
+            <span class="rem">//the color mode, there is an enum for this called colorModeEnum</span>
+            colorMode = bytes.getUI16();
+            <span class="kwrd">if</span> (ColorModeEnum.getName(colorMode) == <span class="kwrd">null</span>)
+            {
+                <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"Unknown color mode: "</span> + colorMode);
+            }
+            traceProperty(<span class="str">"color mode"</span>, ColorModeEnum.getName(colorMode));
+        }
+
+        <span class="rem">//parses the color mode data, e.g. whether it is rgb or cymk, </span>
+        <span class="rem">//i can not parse indexed or duotone colors</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseColorModeData()
+        {
+            Console.Out.WriteLine(<span class="str">"parsing color mode data"</span>);
+
+            <span class="kwrd">uint</span> length = bytes.getUI32();
+
+            <span class="kwrd">switch</span> (colorMode)
+            {
+                <span class="kwrd">case</span> ColorModeEnum.INDEXED:
+                    <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"Indexed color mode not supported"</span>);
+                <span class="kwrd">case</span> ColorModeEnum.DUOTONE:
+                    <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"Duotone color mode not supported"</span>);
+                <span class="kwrd">default</span>:
+                    <span class="kwrd">if</span> (length != 0)
+                    {
+                        <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"Color mode data found for: "</span> + ColorModeEnum.getName(colorMode));
+                    }
+                    <span class="kwrd">break</span>;
+            }
+        }
+
+        <span class="rem">//the image resources are a set of resource blocks, </span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseImageResources()
+        {
+            Console.Out.WriteLine(<span class="str">"parsing image resources"</span>);
+
+            <span class="rem">//get the length of this section and the position of the next section</span>
+            <span class="kwrd">uint</span> length = bytes.getUI32();
+            <span class="kwrd">long</span> nextSection = bytes.Position + length;
+
+            <span class="rem">//generate and parse the image resource blocks from the byte array</span>
+            <span class="kwrd">while</span> (<span class="kwrd">true</span>)
+            {
+                <span class="rem">//bit of a weird way of doing while loops, but it means we can catch overflows</span>
+                <span class="kwrd">if</span> (bytes.Position == nextSection)
+                {
+                    <span class="kwrd">break</span>;
+                }
+                <span class="kwrd">else</span> <span class="kwrd">if</span> (bytes.Position &gt; nextSection)
+                {
+                    <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"Image Resources section has overflowed"</span>);
+                }
+                <span class="kwrd">else</span>
+                {
+                    <span class="rem">//check the signiture</span>
+                    String sig  = bytes.getString(4);
+                    <span class="kwrd">if</span>(sig != <span class="str">"8BIM"</span>)
+                    {
+                        <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"Encountered Image Resource Block with signiture: "</span> + sig);
+                    }
+
+                    <span class="rem">//get the id</span>
+                    <span class="kwrd">ushort</span> imageResourceBlockID = bytes.getUI16();
+                    <span class="rem">//traceProperty("image resource block", imageResourceBlockID);</span>
+
+                    <span class="rem">//get its name</span>
+                    <span class="kwrd">string</span> resourceName = bytes.getPascalString();
+
+                    <span class="rem">//and its length</span>
+                    <span class="kwrd">uint</span> resourceDataLength = bytes.getUI32();
+                    <span class="rem">//pad the data if its odd</span>
+                    <span class="kwrd">if</span> (resourceDataLength % 2 == 1)
+                    {
+                        resourceDataLength++;
+                    }
+                    
+                    <span class="kwrd">switch</span> (imageResourceBlockID)
+                    {
+                        <span class="kwrd">case</span> 1036:
+                            <span class="kwrd">byte</span>[] thumb = parseThumbnail(bytes.getBytes(resourceDataLength));
+                            ByteArrayToFile(Directory.GetCurrentDirectory() + <span class="str">"/thumb.jpg"</span>, thumb);
+                            Console.Out.WriteLine(<span class="str">"writing thumbnail to file"</span>);
+                            <span class="kwrd">break</span>;
+                        <span class="kwrd">default</span>: <span class="rem">//if the bytes aren't being read, they need to be skipped</span>
+                            bytes.skipBytes(resourceDataLength);
+                            <span class="kwrd">break</span>;
+                    }
+                }
+            }
+        }
+
+        <span class="rem">//parses the layers and mask section, for efficiency, we only care about the layer info</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseLayersAndMasks()
+        {
+            Console.Out.WriteLine(<span class="str">"parsing layers and masks"</span>);
+
+            <span class="rem">//get the length of this section and the position of the next section</span>
+            <span class="kwrd">uint</span> length = bytes.getUI32();
+            <span class="kwrd">uint</span> nextSection = (<span class="kwrd">uint</span>)bytes.Position + length - 4;
+
+            <span class="rem">//parse the layer info</span>
+            parseLayerInfo();
+
+            parseImageChannelData();
+
+            bytes.Position = nextSection;
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseImageChannelData()
+        {
+            Console.Out.WriteLine(<span class="str">"parsing image channel data"</span>);
+
+            <span class="kwrd">uint</span> channelDataOffset = (<span class="kwrd">uint</span>)bytes.Position;
+            
+            <span class="kwrd">foreach</span>(Layer layer <span class="kwrd">in</span> layers)
+            {
+                bytes.Position = channelDataOffset;
+                
+                <span class="rem">//parse the data</span>
+                layer.parseImageChannelData(bytes);
+                
+                <span class="rem">//attempt to reset byte stream position</span>
+                <span class="kwrd">foreach</span>(LayerChannelData channel <span class="kwrd">in</span> layer.channels)
+                {
+                    channelDataOffset += channel.channelDataLength;
+                }
+            }
+        }
+
+        <span class="rem">//this is where all the main layer information is parsed</span>
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseLayerInfo()
+        {
+            Console.Out.WriteLine(<span class="str">"parsing layer info"</span>);
+
+            <span class="rem">//get the length of the layers data</span>
+            <span class="kwrd">uint</span> lengthOfLayersData = bytes.getUI32();
+            
+            <span class="rem">//and the number of layers</span>
+            <span class="kwrd">short</span> layerCount = bytes.getI16();
+            traceProperty(<span class="str">"number of layers"</span>, layerCount);
+
+            <span class="rem">//if the layers count is negative, it maens there is something special</span>
+            <span class="rem">//about the alpha channel</span>
+            <span class="kwrd">if</span> (layerCount &lt; 0)
+            {
+                layerCount *= -1;
+                <span class="rem">//throw new Exception("negative layers not implemented yet");</span>
+            }
+
+            <span class="rem">//numberOfLayers is a uint</span>
+            numberOfLayers = (<span class="kwrd">uint</span>)layerCount;
+
+            <span class="rem">//cycle through each layer and parse it</span>
+            <span class="kwrd">for</span>(<span class="kwrd">uint</span> i = 0;i &lt; layerCount;i++)
+            {
+                <span class="rem">//using the builder pattern here to avoid a massive constructor</span>
+                Layer layer = <span class="kwrd">new</span> Layer();
+
+                <span class="rem">//doing the parsing here rather than delegating it to the layer class for readability</span>
+                <span class="rem">//think these are ints</span>
+                layer.top = bytes.getI32();
+                layer.left = bytes.getI32();
+                layer.bottom = bytes.getI32();
+                layer.right = bytes.getI32();
+
+                <span class="rem">//although the channels are stored in a different section, the number</span>
+                <span class="rem">//of channels is stored here</span>
+                layer.numberOfChannels = bytes.getUI16();
+                layer.hasTransparency = layer.numberOfChannels &gt; 3;
+
+                <span class="rem">//parse the channels info, (not actually the channels yet/0</span>
+                <span class="kwrd">for</span>(<span class="kwrd">uint</span> a = 0;a &lt; layer.numberOfChannels;a++)
+                {
+                    LayerChannelData channelData = <span class="kwrd">new</span> LayerChannelData();
+                    channelData.ID = bytes.getI16();
+                    channelData.channelDataLength = bytes.getUI32();
+                    layer.channels.Add(channelData);
+                }
+
+                layer.signiture = bytes.getString(4);
+
+                <span class="kwrd">if</span> (layer.signiture != <span class="str">"8BIM"</span>)
+                {
+                    <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"Encountered layer with signiture: "</span> + layer.signiture);
+                }
+
+                <span class="rem">//options like the blendModeKey arent used, but still parsed</span>
+                bytes.skipBytes(4);
+
+                <span class="rem">//between 0-255</span>
+                layer.opacity = bytes.getByte();
+                
+                <span class="rem">//the base</span>
+                bytes.skipBytes(1);
+
+                <span class="rem">//the flags are booleans which are stored as single bits in one byte</span>
+                <span class="kwrd">byte</span> flags = bytes.getByte();
+                <span class="rem">//checked in libpsd, its a bit cryptic, but looks like 0 is true, 1 is false</span>
+                layer.visible = (flags &amp; 2) == 0;
+
+                <span class="rem">//padding</span>
+                bytes.skipBytes(1);
+
+                <span class="rem">//the extra data fields are tags found at the end of the layer</span>
+                <span class="rem">//and are very similar to image resource blocks</span>
+                <span class="kwrd">uint</span> extraDataFieldLength = bytes.getUI32();
+                
+                <span class="rem">//end of the whole layer, i think</span>
+                <span class="kwrd">uint</span> possibleEnd = (<span class="kwrd">uint</span>)bytes.Position + extraDataFieldLength;
+
+                <span class="rem">//parse the layer mask, dont think this is implemented yet</span>
+                parseLayerMask(layer);
+
+                <span class="rem">//parse the blending ranges, dont think this is implemented yet</span>
+                parseLayerBlendingRanges(layer);
+
+                <span class="rem">//read the name of the layer,  the name also exists as a unicode name</span>
+                <span class="rem">//in an extra tag block</span>
+                layer.name = bytes.getPascalString(4);
+                
+                <span class="rem">//cycle through the extra tags</span>
+                <span class="kwrd">while</span> (bytes.Position != possibleEnd)
+                {
+                    <span class="kwrd">if</span> (bytes.Position &gt; possibleEnd)
+                    {
+                        <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"overflow when parsing extra layer tags"</span>);
+                    }
+
+                    String sig = bytes.getString(4);
+                    
+                    <span class="kwrd">if</span>(sig != <span class="str">"8BIM"</span>)
+                    {
+                        <span class="rem">//really screwed up here</span>
+                        <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"unknown sig for layer tag: "</span> + sig);
+                    }
+
+                    <span class="rem">//get the tag name and the tag length</span>
+                    String tagName = bytes.getString(4);
+                    <span class="kwrd">int</span> tagLength = bytes.getI32();
+                    
+                    <span class="rem">//the tag length is padded to an even number</span>
+                    <span class="kwrd">if</span>(tagLength % 2 == 1)
+                    {
+                        tagLength++;
+                    }
+                    
+                    <span class="kwrd">uint</span> tagEnd = (<span class="kwrd">uint</span>)(bytes.Position + tagLength);
+                    
+                    <span class="rem">//i dont like giving 'bytes' to the layer, but im resetting the position afterwards</span>
+                    <span class="rem">//so it should be fine. </span>
+                    <span class="rem">//parse the tag</span>
+                    layer.parseAdditionalLayerInfo(tagName, tagLength, bytes);
+
+                    <span class="rem">//make sure that we are at the start of the next tag, </span>
+                    bytes.Position = tagEnd;
+                }
+
+                <span class="rem">//make sure we are at the end of the section</span>
+                bytes.Position = possibleEnd;
+                
+                layers.Add(layer);
+            }
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseLayerBlendingRanges(Layer layer)
+        {
+            <span class="kwrd">uint</span> length = bytes.getUI32();
+            
+            <span class="rem">//just get to the next section</span>
+            bytes.skipBytes(length);
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> parseLayerMask(Layer layer)
+        {
+            <span class="rem">//get the length of this section</span>
+            <span class="kwrd">uint</span> length = bytes.getUI32();
+            
+            <span class="rem">//no layer mask, i think.</span>
+            <span class="kwrd">if</span>(length == 0)
+            {
+                <span class="kwrd">return</span>;
+            }
+
+            <span class="rem">//create a new layer mask object</span>
+            LayerMask layerMask = <span class="kwrd">new</span> LayerMask();
+
+            <span class="rem">//fill in its size</span>
+            layerMask.top = bytes.getI32();
+            layerMask.left = bytes.getI32();
+            layerMask.bottom = bytes.getI32();
+            layerMask.right = bytes.getI32();
+
+            <span class="rem">//get the default color, either white or black, 0 or 255</span>
+            bytes.skipBytes(1);
+
+            <span class="rem">//all the flags are stored as single bits of one byte</span>
+            bytes.skipBytes(1);
+
+            <span class="rem">//depending on the length of the layer, differnt things are expected</span>
+            <span class="kwrd">if</span> (length == 20)
+            {
+                <span class="rem">//mask padding </span>
+                bytes.skipBytes(2);
+            }
+            <span class="kwrd">else</span>
+            {
+                bytes.skipBytes(1); <span class="rem">//real flags, same as flags, so why read them?</span>
+
+                <span class="rem">//real user mask background</span>
+                bytes.skipBytes(1);
+                
+                bytes.skipBytes(16); <span class="rem">//i think this is just the same rect as the earlier bounding rectangle</span>
+
+                <span class="rem">//and finally give the layer its mask</span>
+                layer.mask = layerMask;
+            }
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">byte</span>[] parseThumbnail(ByteArray byteArray)
+        {
+            Console.Out.WriteLine(<span class="str">"parsing thumbnail"</span>);
+
+            <span class="kwrd">uint</span> format = byteArray.getUI32();
+
+            <span class="kwrd">uint</span> width = byteArray.getUI32();
+            <span class="kwrd">uint</span> height = byteArray.getUI32();
+
+            <span class="kwrd">uint</span> paddedRowBytes = byteArray.getUI32();
+            
+            <span class="kwrd">uint</span> totalSize = byteArray.getUI32();
+            
+            <span class="kwrd">uint</span> compressedSize = byteArray.getUI32();
+            
+            <span class="kwrd">ushort</span> bitsPerPixel = byteArray.getUI16();
+            
+            <span class="kwrd">ushort</span> numberOfPlanes = byteArray.getUI16();
+
+            <span class="kwrd">byte</span>[] jpegData = byteArray.getBytesAsArray((<span class="kwrd">uint</span>)(byteArray.Length - byteArray.Position));
+
+            <span class="kwrd">return</span> jpegData;
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> traceProperty(<span class="kwrd">string</span> name, <span class="kwrd">string</span> p)
+        {
+            Console.Out.WriteLine(name + <span class="str">": "</span> + p);
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">void</span> traceProperty(<span class="kwrd">string</span> name, <span class="kwrd">object</span> p)
+        {
+            Console.Out.WriteLine(name + <span class="str">": "</span> + p);
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">static</span> <span class="kwrd">byte</span>[] GetBytesFromFile(<span class="kwrd">string</span> fullFilePath)
+        {
+            <span class="rem">// this method is limited to 2^32 byte files (4.2 GB)</span>
+
+            FileStream fs = <span class="kwrd">null</span>;
+            <span class="kwrd">try</span>
+            {
+                fs = File.OpenRead(fullFilePath);
+                <span class="kwrd">byte</span>[] bytes = <span class="kwrd">new</span> <span class="kwrd">byte</span>[fs.Length];
+                fs.Read(bytes, 0, Convert.ToInt32(fs.Length));
+                <span class="kwrd">return</span> bytes;
+            }
+            <span class="kwrd">finally</span>
+            {
+                <span class="kwrd">if</span> (fs != <span class="kwrd">null</span>)
+                {
+                    fs.Close();
+                    fs.Dispose();
+                }
+            }
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">static</span> <span class="kwrd">void</span> ByteArrayToFile(<span class="kwrd">string</span> _FileName, <span class="kwrd">byte</span>[] _ByteArray)
+        {
+            <span class="kwrd">try</span>
+            {
+                <span class="rem">// Open file for reading</span>
+                FileStream _FileStream = <span class="kwrd">new</span> FileStream(_FileName, FileMode.Create, FileAccess.Write);
+                <span class="rem">// Writes a block of bytes to this stream using data from</span>
+                <span class="rem">// a byte array.</span>
+                _FileStream.Write(_ByteArray, 0, _ByteArray.Length);
+
+                <span class="rem">// close file stream</span>
+                _FileStream.Close();
+            }
+            <span class="kwrd">catch</span> (Exception _Exception)
+            {
+                <span class="rem">// Error</span>
+                Console.WriteLine(<span class="str">"Exception caught in process: {0}"</span>, _Exception.ToString());
+            }
+        }
+    }
+}
+</pre></body></html>

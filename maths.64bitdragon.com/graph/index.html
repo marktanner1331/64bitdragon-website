@@ -1,0 +1,216 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="Render your equation on a graph using this very simple and easy tool.">
+    <title>Equation Grapher - Online</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0px;
+            font-size: 0;
+            overflow: hidden;
+        }
+
+        #parsedData {
+            white-space: pre;
+            font-family: 'Courier New';
+        }
+
+        #parsedData .stringObject {
+            color: darkgreen;
+        }
+
+        #parsedData .numberObject {
+            color: darkblue;
+        }
+
+        #parsedData .booleanObject {
+            color: darkblue;
+        }
+
+        #parsedData .key {
+            font-weight: bold;
+            padding-right: 5px;
+        }
+
+        #outerContainer {
+            display: inline-block;
+            height: 100%;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .display-table {
+            display: table;
+            height: 100%;
+            width: 100%;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0 0 0 25px;
+        }
+
+        .collapsed,
+        .uncollapsed {
+            cursor: pointer;
+            border: 1px solid #aaaaaa;
+            line-height: 0.8em;
+            margin-right: 5px;
+            padding: 0 2px 0 2px;
+            font-weight: bold;
+        }
+
+    </style>
+
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://64bitdragon.com/js/jquery.resize.js"></script>
+    <script src="main.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            didClickEquation();
+        });
+
+    </script>
+</head>
+
+<body>
+    <div id="outerContainer">
+        <div class="display-table">
+            <div style="display:table-row;width:100%;">
+                <div style="display:table-cell;width:100%;height:50px;">
+                    <div style="margin:auto;padding:10px;background:#dddddd;margin-bottom:15px;">
+                        <a class="btn btn-default btn-md" style="" href="/" role="button">
+                            Home
+                        </a>
+                        <div style="display:inline-block;position:absolute;left:50%;transform:translate(-50%, -15px);">
+                            <header>
+                                <h3>Equation Grapher</h3>
+                            </header>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="display:table-row;width:100%;">
+                <div style="display:table-cell;width:100%;">
+                    <div class="container" style="max-width: 768px;">
+                        <div class="row" style="padding-bottom:15px;">
+                            <div class="col-xs-6">
+                                <a id="equationButton" class="btn btn-default btn-block" onclick="didClickEquation();" role="button">
+                                    Equation
+                                </a>
+                            </div>
+                            <div class="col-xs-6">
+                                <a id="graphButton" class="btn btn-default btn-block" onclick="didClickGraph();" role="button">
+                                    Graph
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="equationRow" style="display:table-row;width:100%;height:100%;">
+                <div class="container" style="height:calc(100% - 20px);max-width: 768px;">
+                    <div class="row" style="margin-bottom: 10px">
+                        <div class="col-xs-12" style="border: 1px solid #aaaaaa;">
+                            <div>
+                                <h4>
+                                    Equation
+                                </h4>
+                            </div>
+                            <div style="display:table;margin-bottom: 15px;border-spacing: 5px">
+                                <div style="display:table-cell;white-space: nowrap;">y =&nbsp;</div>
+                                <div style="display:table-cell;width:100%;"><input id="equation" type="text" style="width:100%;" /></div>
+                                <div style="display:table-cell;margin-left: 5px;"><div class="btn btn-default" onclick="didClickGraph();">Run</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="border: 1px solid #aaaaaa;">
+                        <div class="col-xs-12">
+                            <h4>Available Functions</h4>
+                            <table>
+                                <tr>
+                                    <th>
+                                        Name
+                                    </th>
+                                    <th>
+                                        Description
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        2 * x;
+                                    </td>
+                                    <td>
+                                        Multiplication
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        x / 2;
+                                    </td>
+                                    <td>
+                                        Division
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        x + 2;
+                                    </td>
+                                    <td>
+                                        Addition
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        x - 2;
+                                    </td>
+                                    <td>
+                                        Subtraction
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        x * (x - 2)
+                                    </td>
+                                    <td>
+                                        Brackets
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="graphRow" style="display:table-row;width:100%;height:100%">
+                <div class="container" style="height:calc(100% - 20px);max-width: 768px;">
+                    <div class="row" style="height:100%">
+                        <div class="col-xs-12" style="height:100%;position:relative;overflow:auto;border: 1px solid #aaaaaa;padding:0;">
+                            <div id="canvasWrapper" style="position:absolute;width:100%;height:100%;">
+                                <canvas style="display: block;top: 0;left: 0;position: absolute;width: 100%;height: 100%;" id="graphCanvas" width="1000" height="1000"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

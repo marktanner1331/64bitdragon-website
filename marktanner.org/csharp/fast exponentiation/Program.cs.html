@@ -1,0 +1,57 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> fast_exponentiation
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="rem">//calculate x to the power of y mod n</span>
+            <span class="kwrd">uint</span> x = 5;
+            <span class="kwrd">uint</span> y = 7;
+            <span class="kwrd">uint</span> n = 11;
+
+            Console.WriteLine(fastExponentiation(x, y, n));
+            Console.Read();
+        }
+
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// this method is fast because it spits the operation into as many parts as possible, and modding at every available chance</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="rem">/// &lt;param name="x"&gt;the base&lt;/param&gt;</span>
+        <span class="rem">/// &lt;param name="y"&gt;the index&lt;/param&gt;</span>
+        <span class="rem">/// &lt;param name="n"&gt;the modulus&lt;/param&gt;</span>
+        <span class="rem">/// &lt;returns&gt;&lt;/returns&gt;</span>
+        <span class="kwrd">static</span> <span class="kwrd">uint</span> fastExponentiation(<span class="kwrd">uint</span> x, <span class="kwrd">uint</span> y, <span class="kwrd">uint</span> n)
+        {
+            <span class="kwrd">uint</span> temp;
+
+            <span class="kwrd">if</span>(y == 1)
+            {
+                <span class="kwrd">return</span> x % n;
+            }
+
+            <span class="rem">//is it even?</span>
+            <span class="kwrd">if</span> ((y &amp; 1) == 0)
+            {
+                <span class="rem">//if y is even, we can reduce it to the square of x to the power of half of y</span>
+                temp = fastExponentiation(x, y / 2, n);
+                <span class="kwrd">return</span> (temp * temp) % n;
+            }
+
+            <span class="rem">//its odd</span>
+            <span class="rem">//we treat it as if its even, but then multiply it by an extra x to balance the y - 1</span>
+            temp = fastExponentiation(x, (y - 1) / 2, n);
+            temp = (temp * temp) % n;
+            temp = (temp * x) % n;
+
+            <span class="kwrd">return</span> temp;
+        }
+    }
+}
+</pre></body></html>

@@ -1,0 +1,68 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul>
+                <li>
+                    We can split data into two types: Binary and text.
+                </li>
+                <li>
+                    Binary:
+                    <ul>
+                        <li>
+                            Binary data is interpreted as a sequence of bytes.
+                        </li>
+                        <li>
+                            The sequence conforms to a specific format. This could be anything from a single integer, to a complex file format.
+                        </li>
+                        <li>
+                            Binary data is usually displayed in hexadecimal form.
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Text:
+                    <ul>
+                        <li>
+                            Text data is interpreted as a sequence of characters.
+                        </li>
+                        <li>
+                            The characters will belong to a specific character set, usually ANSI or Unicode.
+                        </li>
+                        <li>
+                            Text data can be further split into two types: printable characters and control characters.
+                        </li>
+                        <li>
+                            Printable Characters:
+                            <ul>
+                                <li>
+                                    These are characters that can be drawn to the screen, such as letters, numbers, and punctuation.
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            Control Characters:
+                            <ul>
+                                <li>
+                                    Control characters perform an action, such as creating a new line.
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+text = "Lorem ipsum dolor sit amet,"
+print(text)  # prints: Lorem ipsum dolor sit amet,
+
+binary = bytes([0x12, 0x15, 0x15, 0x01])
+print(binary)  # prints: b'\x12\x15\x15\x01'
+</pre>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+\documentclass[11pt,fleqn,a4paper]{article}
+
+\usepackage[a4paper,bottom=0cm]{geometry}
+\usepackage{url}
+\usepackage{amsmath}
+\setlength{\voffset}{-0.75in}
+\setlength{\headsep}{5pt}
+
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\mainEquation}{\( \sum\limits_{i=0}^{n} k^i = \frac{k ^{n + 1} - 1}{k - 1} \quad 0 \leq n < \infty  \)}
+
+\begin{document}
+\title{Proof that \mainEquation}
+\date{}
+\maketitle
+
+\[ \sum\limits_{i=0}^{n} k^i = \frac{k ^{n + 1} - 1}{k - 1} \]
+
+\[(k - 1)  \sum\limits_{i=0}^{n} k^i = k ^{n + 1} - 1\]
+
+\[\sum\limits_{i=0}^{n} (k - 1) k^i = k ^{n + 1} - 1\]
+
+\[\sum\limits_{i=0}^{n} (k^{i + 1} - k^i) = k ^{n + 1} - 1\]
+
+\[\sum\limits_{i=0}^{n} k^{i + 1} - \sum\limits_{i=0}^{n} k^i = k ^{n + 1} - 1\]
+
+\[\sum\limits_{i=1}^{n + 1} k^{i} - \sum\limits_{i=0}^{n} k^i = k ^{n + 1} - 1\]
+
+\[\sum\limits_{i=n + 1}^{n + 1} k^{i} + \sum\limits_{i=1}^{n} k^{i} - \sum\limits_{i=0}^{0} k^i  - \sum\limits_{i=1}^{n} k^i = k ^{n + 1} - 1\]
+
+\[\sum\limits_{i=n + 1}^{n + 1} k^{i} - \sum\limits_{i=0}^{0} k^i = k ^{n + 1} - 1\]
+
+\[k ^{n + 1} - 1 = k ^{n + 1} - 1\]
+
+\end{document}

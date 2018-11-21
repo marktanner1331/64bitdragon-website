@@ -1,0 +1,122 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    Data can be split into two types: binary and text.
+                </li>
+                <li>
+                    However some mediums only accept text data, for example:
+                    <ul>
+                        <li>
+                            A database column which is set to store a string.
+                        </li>
+                        <li>
+                            A markup language, such as HTML, which only allows text data as the source of an image.
+                        </li>
+                        <li>
+                            A protocol which only allows the transfer of text data, e.g. data inside an XML node.
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    If we try and interpret binary data as text data then errors will occur. This is because some bytes will be interpreted as control characters, e.g. <code>0x00</code> will be treated as an end of string marker.
+                </li>
+                <li>
+                    Base64 is a method of encoding binary data such that when it is interpreted as text data, only printable characters will be found.-
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Encoding Base64 Data</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    Lets start by encoding the following bytes: <code>0x12, 0x15, 0x15, 0x01, 0x66, 0x22</code>
+                </li>
+                <li>
+                    We can represent these in binary, using a pipe character to seperate each byte:
+                    <div style="padding:10px;width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/dataEncoding/base64.svg" />
+                    </div>
+                </li>
+                <li>
+                    In the above example the bits where grouped into blocks of 8, however there is no reason why we can't change the size of each group. E.g. we can change them to be groups of 6:
+                    <div style="padding:10px;width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/dataEncoding/base64 2.svg" />
+                    </div>
+                </li>
+                <li>
+                    If we convert these back into a numbers:
+                    <div style="padding:10px;width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/dataEncoding/base64 3.svg" />
+                    </div>
+                    We can define a few properties of these numbers:
+                    <ol class="ulBiggerGaps2">
+                        <li>
+                            The smallest possible value is <code>000000</code> = 0.
+                        </li>
+                        <li>
+                            The largest possible value is <code>111111</code> = 63.
+                        </li>
+                        <li>
+                            The number of distinct values is 2<sup>6</sup> = 64.
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    We have gone from blocks of 8 bits, with 256 possible values, down to blocks of 6 bits, with 64 possible values. The important thing about this is that each one of the 64 values can be given a unique printable character:
+                    <ul class="ulBiggerGaps2">
+                        <li>
+                            If the value is between 0 and 25 (inclusive): the character is between A and Z (uppercase).
+                        </li>
+                        <li>
+                            If the value is between 26 and 51 (inclusive): the character is between a and z (loewrcase).
+                        </li>
+                        <li>
+                            If the value is between 52 and 61 (inclusive): the character is between 0 and 9.
+                        </li>
+                        <li>
+                            Finally, for the last two values, we use a '/' and a '+':
+                            <ul class="ulBiggerGaps2">
+                                <li>
+                                    62 = /
+                                </li>
+                                <li>
+                                    63 = +
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Assigning a printable character to each block of 6 bits gives:
+                    <div style="padding:10px;width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/dataEncoding/base64 4.svg" />
+                    </div>
+                </li>
+                <li>
+                    And finally we can join these together, to get a base64 string of: <b>EhUVAWYi</b>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Padding</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    The above example worked well because there were 48 bits in total. This could be split into 8 blocks of 6 bits.
+                </li>
+                <li>
+                    However, if your total number of bits is not divisible by 6 then you will need to add some padding.
+                </li>
+            </ul>
+        </section>
+    </div>
+    padding
+    code
+    size increase
+</div>

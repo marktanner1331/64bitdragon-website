@@ -1,0 +1,75 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps centerImages">
+                <li>
+                    Divisibility is a property of a pair of numbers.
+                </li>
+                <li>
+                    Given two numbers: <b>d</b> and <b>n</b>, we can say <b>d</b> divides <b>n</b> if there is a third number <b>k</b> in which <b>dk</b> = <b>n</b>
+                </li>
+                <li>
+                    This property also goes by other names:
+                    <ul>
+                        <li>
+                            <b>n</b> is a multiple of <b>d</b>
+                        </li>
+                        <li>
+                            <b>d</b> is a factor or divisor of <b>n</b>
+                        </li>
+                        <li>
+                            <b>n</b> is the dividend
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    if <b>d</b> divides <b>n</b> then we write it as:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 10px 10px 10px" src="/images/number theory/divisibility.svg" />
+                        <br />
+                        LaTeX: <code>d \mid n</code>
+                    </div>
+                </li>
+                <li>
+                    if <b>d</b> does not divide <b>n</b> then we write it as:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/number theory/divisibility 2.svg" />
+                        <br />
+                        LaTeX: <code>d \nmid n</code>
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            <ul class="ulBiggerGaps centerImages">
+                <li>
+                    Given the two numbers: 7 and 42, we can say that 7 divides 42 because there is third number: 6 which forms the equality 6 * 7 = 42
+                </li>
+                <li>
+                    This can be written as:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/number theory/divisibility 3.svg" />
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+def is_divisible(divisor, dividend):
+    return dividend % divisor == 0
+
+
+print(is_divisible(7, 42))  # prints True
+
+print(is_divisible(4, 42))  # prints False
+</pre>
+        </section>
+    </div>
+</div>

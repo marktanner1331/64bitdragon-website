@@ -1,0 +1,24 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Threading.Tasks;
+<span class="kwrd">using</span> System.Windows.Forms;
+
+<span class="kwrd">namespace</span> bresenham_line
+{
+    <span class="kwrd">static</span> <span class="kwrd">class</span> Program
+    {
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// The main entry point for the application.</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        [STAThread]
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(<span class="kwrd">false</span>);
+            Application.Run(<span class="kwrd">new</span> Form1());
+        }
+    }
+}
+</pre></body></html>

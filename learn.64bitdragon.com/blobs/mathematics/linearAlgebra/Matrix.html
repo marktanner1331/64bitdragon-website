@@ -1,0 +1,82 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Definition</div>
+            A matrix is a rectangular group of numbers (or symbols) with a given number of rows and columns.
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            <p>
+                The following matrix has two rows and three columns, and is described as a "two by three" (2x3) matrix.
+            </p>
+            <div style="width:100%;text-align:center;">
+                <img style="padding:0 0 10px 10px" src="/images/matrices/matrix example.png" />
+            </div>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">LaTeX</div>
+            <pre class="latexFullWidth">
+\begin{bmatrix}
+    3 & 6 & 2  \\
+    5 & 1 & 10
+\end{bmatrix}
+</pre>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notation</div>
+
+            <ul>
+                <li>
+                    There are a few different ways to represent a matrix. The easiest is with an bold uppercase letter: <b>A</b>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+A = [[3, 6, 2], [5, 1, 10]]
+
+print(A)
+</pre>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notes</div>
+            <ul>
+                <li>
+                    The plural of matrix is matrices.
+                </li>
+                <li>
+                    The size of a matrix is called its dimension or order. It is written with as rows x columns. A matrix with 2 rows and 3 columns is written as 2x3.
+                </li>
+                <li>
+                    Two matrices are considered equal if and only if:
+                    <ul>
+                        <li>
+                            They have the same number of rows.
+                        </li>
+                        <li>
+                            They have the same number of columns.
+                        </li>
+                        <li>
+                            Each corresponding element is equal. i.e. x1<sub>11</sub> = x2<sub>11</sub>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    The <code>numpy.matrix is depreciated, in favour of regular arrays</code>
+                </li>
+            </ul>
+
+        </section>
+    </div>
+</div>

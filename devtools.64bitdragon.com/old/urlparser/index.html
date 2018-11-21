@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Build and submit custom post requests to any url using this very simple and easy tool.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>URL Parser - Online</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0px;
+            font-size: 14px;
+        }
+
+        header h3 {
+            white-space: nowrap;
+        }
+    </style>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113657998-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-113657998-1');
+    </script>
+
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+            google_ad_client: "ca-pub-9421706488410032",
+            enable_page_level_ads: true
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        function didClickSubmit() {
+            var url = $("#urlBox").val();
+            if (url == "") {
+                return;
+            }
+
+            var variablesString = url;
+            var variablesArray = variablesString.split('&');
+
+            var response = "";
+            for (var variable of variablesArray) {
+                response += variable + "\n";
+            }
+
+            $("#parsedURL").val(response);
+        }
+
+        $(document).ready(function () {
+            resize();
+        });
+        $(window).resize(resize);
+
+        function resize() {
+            var parsedURL = $("#parsedURL");
+
+            parsedURL.css("height", ($(window).height() - parsedURL.position().top - 75) + "px");
+        }
+    </script>
+</head>
+<body>
+    <div style="width:100%;height:50px;margin-bottom:15px;">
+        <div style="margin:auto;padding:10px;background:#dddddd;margin-bottom:15px;">
+            <a class="btn btn-default btn-md" style="" href="/" role="button">
+                Home
+            </a>
+            <div style="display:inline-block;position:absolute;left:50%;transform:translate(-50%, -15px);">
+                <header><h3>URL Parser</h3></header>
+            </div>
+        </div>
+    </div>
+    <div style="height:calc(100% - 65px);overflow:auto;">
+        <div class="container" style="max-width:768px;">
+            <div class="row" style="padding-bottom:10px;">
+                <div class="col-xs-12" style="margin-bottom:5px;">
+                    <div style="display:table;width:100%;border-spacing:5px;border-collapse:separate;">
+                        <input type="text" id="urlBox" placeholder="URL" style="width:100%;display:table-cell;padding:5px;" />
+                        <div style="display:table-cell;width:1px;" class="btn btn-primary" onclick="didClickSubmit()">Submit</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="height:100%">
+                <div class="col-xs-12" style="padding-left:20px;padding-right:20px;height:100%">
+                    <textarea id="parsedURL" placeholder="Output" style="width:100%;height:100%"></textarea>
+                </div>
+            </div>
+            <div class="row" style="height:100%">
+                <div class="col-md-12" style="height:100%;">
+                    <headxr>
+                        <h2>
+                            How it works
+                        </h2>
+                    </headxr>
+                    <section style="padding-bottom:50px;">
+                        
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

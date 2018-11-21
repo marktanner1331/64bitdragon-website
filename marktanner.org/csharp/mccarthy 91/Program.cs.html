@@ -1,0 +1,35 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Diagnostics;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> mccarthy_91
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="rem">//the mcCarthy 91 function will return 91 for all integers smaller than 102</span>
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 1; i &lt; 102; i++)
+            {
+                Debug.WriteLine(i + <span class="str">": "</span> + m(i));
+            }
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">int</span> m(<span class="kwrd">int</span> n)
+        {
+            <span class="kwrd">if</span> (n &gt; 100)
+            {
+                <span class="kwrd">return</span> n - 10;
+            }
+            <span class="kwrd">else</span>
+            {
+                <span class="kwrd">return</span> m(m(n + 11));
+            }
+        }
+    }
+}
+</pre></body></html>

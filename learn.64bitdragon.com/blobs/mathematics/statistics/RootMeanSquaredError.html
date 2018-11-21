@@ -1,0 +1,92 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Definition</div>
+            The root mean squared error (rmse) is a metric for determining the similarity between two sets.
+            <br />
+            <br />
+            It is similar to the mean absolute error, except with a couple of extra steps:
+            <br />
+            <ol>
+                <li>Each absolute error is squared before being summed.</li>
+                <li>The final result (mean squared error) is square-rooted before being returned.</li>
+            </ol>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            Find the root square mean error of the following two sets of numbers:
+            <br />
+            <p class="exampleData equation">
+                S1 = [2, 5, 9, 2]
+            </p>
+            <p class="exampleData equation">
+                S2 = [6, 3, 6, 1]
+            </p>
+            <br />
+            <ol class="exampleSteps">
+                <li>
+                    First we calculate the differences between these numbers:
+                    <p class="equation">D = [2 - 6, 5 - 3, 9 - 6, 2 - 1]</p>
+                    <p class="equation">D = [-4, 2, 3, 1]</p>
+                </li>
+                <li>
+                    Now we square them:
+                    <p class="equation">
+                        D = [-4 * -4, 2 * 2, 3 * 3, 1 * 1]
+                    </p>
+                    <p class="equation">
+                        D = [16, 4, 9, 1]
+                    </p>
+                </li>
+                <li>
+                    next we find the mean of these numbers:
+                    <p class="equation">
+                        mean = (16 + 4 + 9 + 1) / 4
+                    </p>
+                    <p class="equation">
+                        mean = 30 / 4
+                    </p>
+                    <p class="equation">
+                        mean = 7.5
+                    </p>
+                </li>
+                <li>
+                    finally we square root the mean:
+                    <p class="equation">
+                        rmse = sqrt(mean)
+                    </p>
+                    <p class="equation">
+                        rmse = 2.74 to 3 s.f.
+                    </p>
+                </li>
+            </ol>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Mathematical Definition</div>
+            <img style="padding:15px;" src="/images/equations/rmse.png" />
+            <br />
+            LaTeX: <code>rmse = \sqrt{(\frac{1}{n})\sum_{i=1}^{n}(y_{i} - x_{i})^{2}}</code>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+<pre>
+import sklearn.metrics
+import math
+
+S1 = [2, 5, 9, 2]
+S2 = [6, 3, 6, 1]
+
+mse = sklearn.metrics.mean_squared_error(S1, S2)
+rmse = math.sqrt(mse)
+
+print(rmse)
+</pre>
+        </section>
+    </div>
+</div>

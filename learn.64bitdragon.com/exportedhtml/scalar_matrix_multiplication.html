@@ -1,0 +1,234 @@
+﻿<html>
+<head>
+<title>Scalar Matrix Multiplication</title>
+	<meta charset="utf-8">
+	<meta name="description" content="An introduction to Scalar Matrix Multiplication with example code in Python">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="keywords" content="matrix,scalar,multiplication,numpy">
+	<meta name="author" content="Mark Tanner">
+
+	<link rel="stylesheet" href="/css/site.css" />
+	<link rel="stylesheet" href="/css/blob.css" />
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+	<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+	<!--<script src="/js/jquery-1.11.3.min.js" crossorigin="anonymous"></script>-->
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-113657998-2"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'UA-113657998-2');
+	</script>
+
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+	<script src="/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript">
+	$(document).ready(function() {
+		$( "#search" ).autocomplete({
+			source: "/search_ajax.php",
+			minLength: 2,
+			select: function( event, ui ) {
+				var url = "/articles/" + ui.item.value.replace(/ /g, "_").toLowerCase();
+				window.location.href = url;
+			}
+		});
+	});
+
+		function showHide(sender) {
+			var button = $(sender);
+			var container = $(button.parent().parent().children()[1]);
+			
+			if(container.css("display") == "block") {
+				container.css("display", "none");
+			} else {
+				container.css("display", "block");
+			}
+		}
+
+		function showAll() {
+			$("#prerequisites").find(".blob").find(".container").css("display", "block");
+		}
+
+		function hideAll() {
+			$("#prerequisites").find(".blob").find(".container").css("display", "none");
+		}
+	</script>
+</head>
+<body>
+<div class="siteHead">
+	<span style="margin-right:15px;" class="logo">
+		64bitdragon
+	</span>
+	<a href="/">
+            <span id="home" class="siteHeadButton">
+                HOME
+            </span>
+        </a>
+        <a href="/mathematics">
+            <span id="statistics" class="siteHeadButton">
+                Mathematics
+            </span>
+        </a>
+        <a href="/computer_science">
+            <span id="statistics" class="siteHeadButton">
+                Computer Science
+            </span>
+        </a>
+	<input type="text" id="search" placeholder="Search..">
+</div>
+<div 
+<div class="container" style="max-width:768px;padding-top:70px;">
+	<div class="row">
+		<div class="pageHeading"><header>Scalar Matrix Multiplication</header></div><div class="pageSubHeading" style="padding-bottom:15px"><span>Prerequisites</span><div class="showHide" onclick="showAll();">Show All</div><div class="showHide" style="margin-right:7px;" onclick="hideAll();">Hide All</div></div><div id="prerequisites"><article><div class="blob"><div class="prerequisiteHeading"><header>Matrices</header><div class="showHide" onclick="showHide(this);">Show/Hide</div></div>﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Definition</div>
+            A matrix is a rectangular group of numbers (or symbols) with a given number of rows and columns.
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            <p>
+                The following matrix has two rows and three columns, and is described as a "two by three" (2x3) matrix.
+            </p>
+            <div style="width:100%;text-align:center;">
+                <img style="padding:0 0 10px 10px" src="/images/matrices/matrix example.png" />
+            </div>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">LaTeX</div>
+            <pre class="latexFullWidth">
+\begin{bmatrix}
+    3 & 6 & 2  \\
+    5 & 1 & 10
+\end{bmatrix}
+</pre>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notation</div>
+
+            <ul>
+                <li>
+                    There are a few different ways to represent a matrix. The easiest is with an bold uppercase letter: <b>A</b>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+A = [[3, 6, 2], [5, 1, 10]]
+
+print(A)
+</pre>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notes</div>
+            <ul>
+                <li>
+                    The plural of matrix is matrices.
+                </li>
+                <li>
+                    The size of a matrix is called its dimension or order. It is written with as rows x columns. A matrix with 2 rows and 3 columns is written as 2x3.
+                </li>
+                <li>
+                    Two matrices are considered equal if and only if:
+                    <ul>
+                        <li>
+                            They have the same number of rows.
+                        </li>
+                        <li>
+                            They have the same number of columns.
+                        </li>
+                        <li>
+                            Each corresponding element is equal. i.e. x1<sub>11</sub> = x2<sub>11</sub>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    The <code>numpy.matrix is depreciated, in favour of regular arrays</code>
+                </li>
+            </ul>
+
+        </section>
+    </div>
+</div></div></article></div><div style="border-bottom: 1px solid #a2a9b1;"></div><br /><article><div class="blob"><div class="blobHeading"><header>Scalar Matrix Multiplication</header></div>﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul>
+                <li>
+                    There are two ways to multiply matrices; either by a number, or by another matrix.
+                </li>
+                <li>
+                    Scalar Multiplication is the the first of these, multiplying a matrix by a number.
+                </li>
+                <li>
+                    To multiply a matrix by a number, you multiply each element by that number.
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Mathematical Definition</div>
+            <div style="width:100%;text-align:center;">
+                <img style="padding:10px 0 10px 10px" src="/images/matrices/scalar multiplication.png" />
+            </div>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            <div style="width:100%;text-align:center;">
+                <img style="padding:10px 0 10px 10px" src="/images/matrices/scalar multiplication 2.png" />
+            </div>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+import numpy as np
+
+a = [[3, 6, 2], [5, 1, 10]]
+
+c = np.multiply(a, 4)
+print(c)
+</pre>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notes</div>
+            <ul>
+                <li>
+                    The resulting matrix of the multiplication is called a 'Scalar Multiple'.
+                </li>
+            </ul>
+        </section>
+    </div>
+</div></div></article>	</div>
+</div>
+<div style="margin-bottom:25px;"></div>
+</body>
+</html>

@@ -1,0 +1,61 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul>
+                <li>
+                    Matrix Transposition is an operation that converts one matrix into another.
+                </li>
+                <li>
+                    Each row in the original matrix is used as a column in the transposed matrix.
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notation</div>
+            There are two main notations used to show that a matrix is transposed:
+            <ul>
+                <li>
+                    Using a prime: the transpose of matrix <b>A</b> is <b>A'</b>
+                </li>
+                <li>
+                    Using a <b>T</b> superscript: the tranpose of matrix <b>A</b> is <b>A<sup>T</sup></b>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            <div style="width:100%;text-align:center;">
+                <img style="padding:0 0 10px 10px" src="/images/matrices/transpose.png" />
+            </div>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+import numpy as np
+
+a = np.matrix([[3, 6, 2], [5, 1, 10]])
+print(a)
+
+transposed = a.transpose()
+print(transposed)
+</pre>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Notes</div>
+            <ul>
+                <li>
+                    The order (or dimension) of a matrix is switched when transposing, i.e. a 3x2 matrix creates a 2x3 matrix.
+                </li>
+            </ul>
+        </section>
+    </div>
+</div>

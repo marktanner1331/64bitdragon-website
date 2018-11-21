@@ -1,0 +1,29 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> binary_heap
+{
+    <span class="rem">//implementation of a min-heap</span>
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">int</span>[] values = {40, 68, 27, 16, 79, 84, 36, 69, 29, 47};
+            BinaryHeap heap = <span class="kwrd">new</span> BinaryHeap(values);
+
+            <span class="kwrd">while</span> (heap.size &gt; 1)
+            {
+                Console.Write(heap.deleteMin() + <span class="str">", "</span>);
+            }
+
+            Console.Write(heap.deleteMin());
+
+            Console.Read();
+        }
+    }
+}
+</pre></body></html>

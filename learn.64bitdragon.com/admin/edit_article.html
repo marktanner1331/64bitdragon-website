@@ -1,0 +1,102 @@
+﻿<html>
+<head>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script type="text/javascript">
+        data = {
+            blob: {},
+            prerequisites: [],
+
+            init(onComplete) {
+                var blobID = getParameterByName("blobid");
+                data._getBlob(blobID, function (blob) {
+                    data.blob = blob;
+
+                    data._getPrerequisites(blobID, function (prerequisites) {
+                        data.prerequisites = prerequisites;
+                        onComplete();
+                    });
+                });
+            },
+
+            _getBlob(blobID, onComplete) {
+                $.ajax({
+                    url: "ajax/get_blob.php?blobid=" + blobID,
+                    success: function (result) {
+                        onComplete(result);
+                    }
+                });
+            },
+
+            _getPrerequisites(blobID, onComplete) {
+                $.ajax({
+                    url: "ajax/get_prerequisites.php?blobid=" + blobID,
+                    success: function (result) {
+                        onComplete(result);
+                    }
+                });
+            }
+        };
+
+        prerequisiteTableManager = {
+            init() {
+                var table = $("#prerequisites");
+                table.empty();
+
+                var prefab = $("#prerequisiteRowPrefab").prop("outerHTML");
+
+                for (var prerequisite of data.prerequisites) {
+                    var prefab = $("#prerequisiteRowPrefab").prop("outerHTML");
+                    prefab = prefab.replace("{blobID}", prerequisite.blobID);
+                    prefab = prefab.replace("{blobName}", prerequisite.name);
+                    prefab = prefab.replace("{finished}", prerequisite.finished);
+
+                    console.log(prefab);
+                }
+            }
+        };
+
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+    </script>
+</head>
+<body>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            data.init(function () {
+                console.log("initialized");
+                console.log(data.blob);
+                console.log(data.prerequisites);
+
+                prerequisiteTableManager.init();
+            });
+        });
+    </script>
+
+    <table id="prerequisites">
+
+    </table>
+
+    <div style="display:none;">
+        <table>
+            <tr id="prerequisiteRowPrefab">
+                <td>
+                    {blobID}
+                </td>
+                <td>
+                    {blobName}
+                </td>
+                <td>
+                    {finished}
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

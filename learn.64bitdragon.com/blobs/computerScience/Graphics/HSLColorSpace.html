@@ -1,0 +1,11 @@
+﻿Lightness
+
+the lightness, as defined in the HSL color space is different than used in other color spaces (such as CIELAB)
+
+int Cmax = Math.Max(Math.Max(startRead[0], startRead[1]), startRead[2]);
+int Cmin = Math.Min(Math.Min(startRead[0], startRead[1]), startRead[2]);
+
+int L = (Cmax + Cmin) / 2;
+
+its only the lowest and highest values that affect lightness. 
+the middle value can be set to whatever you want, it will change the color, but not the lightness of the color.

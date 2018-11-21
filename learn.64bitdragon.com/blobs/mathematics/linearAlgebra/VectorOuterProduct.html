@@ -1,0 +1,66 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul>
+                <li>
+                    The Vector Outer Product is a method of multiplying two vectors and receiving a matrix as the result.
+                </li>
+                <li>
+                    The first vector must be a column vector, while the second must be a row vector.
+                </li>
+                <li>
+                    The two vectors do not need to be the same size.
+                </li>
+                <li>
+                    The order of the resulting matrix will have the same number of rows as the first vector, and the same number of columns as the second vector.
+                </li>
+                <li>
+                    Each element in the resulting matrix will be the product of corresponding elements from the two vectors.
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/matrices/vector outer product.png" />
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            Find the cross product of the following vectors:
+            <div style="width:100%;text-align:center;">
+                <img style="padding:10px 0 10px 10px" src="/images/matrices/vector outer product 3.png" />
+            </div>
+            <strong>Solution</strong>
+            <ol>
+                <li>
+                    First we position them to make it easier to see which elements need to be multiplied:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/matrices/vector outer product 2.png" />
+                    </div>
+                </li>
+                <li>
+                    And solve:
+                    <div style="width:100%;text-align:center;">
+                        <img style="padding:10px 0 10px 10px" src="/images/matrices/vector outer product 4.png" />
+                    </div>
+                    Note that we write the product as <strong>ab'</strong> as <strong>b</strong> needs to be a row vector.
+                </li>
+            </ol>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+import numpy as np
+
+a = [6, 5]
+b = [4, 3, 8]
+
+c = np.outer(a, b)
+print(c)
+</pre>
+        </section>
+    </div>
+</div>

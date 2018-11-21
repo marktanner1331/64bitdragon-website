@@ -1,0 +1,88 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Diagnostics;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> fast_square_root
+{
+    <span class="rem">/// &lt;summary&gt;</span>
+    <span class="rem">/// comparing this method to the 'proper' methods, its really slow, but i tried.</span>
+    <span class="rem">/// &lt;/summary&gt;</span>
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            Stopwatch sw = <span class="kwrd">new</span> Stopwatch();
+            sw.Start();
+
+            <span class="kwrd">for</span> (<span class="kwrd">uint</span> i = 0; i &lt; 10 * 1000 * 1000; i++)
+            {
+                <span class="kwrd">uint</span> root = squareRoot(i);
+            }
+
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds + <span class="str">"ms"</span>);
+            Console.Read();
+        }
+
+        <span class="rem">//performs the same as Math.Floor(Math.Sqrt(num));</span>
+        <span class="kwrd">static</span> <span class="kwrd">uint</span> squareRoot(<span class="kwrd">uint</span> num)
+        {
+            <span class="rem">//moving this after the if statement should be faster, but its not, </span>
+            <span class="rem">//probably something to do with parallelism</span>
+            <span class="kwrd">uint</span> numBits = countBits(num);
+
+            <span class="rem">//for this method to work, the number needs to be at least 3 bits</span>
+            <span class="kwrd">if</span> (num &lt; 4)
+            {
+                <span class="kwrd">if</span> (num == 0)
+                {
+                    <span class="kwrd">return</span> 0;
+                }
+                <span class="kwrd">else</span>
+                {
+                    <span class="kwrd">return</span> 1;
+                }
+            }
+             
+            <span class="kwrd">uint</span> numBitsInRoot = (numBits &gt;&gt; 1) + (numBits &amp; 1);
+
+            <span class="kwrd">uint</span> firstUnknownBitIndex = numBitsInRoot - 2;
+
+            <span class="kwrd">uint</span> guessForRoot = (<span class="kwrd">uint</span>)1 &lt;&lt; (<span class="kwrd">int</span>)(numBitsInRoot - 1);
+            
+            <span class="kwrd">while</span> (<span class="kwrd">true</span>)
+            {
+                <span class="kwrd">uint</span> temp = (<span class="kwrd">uint</span>)(guessForRoot + (1 &lt;&lt; (<span class="kwrd">int</span>)firstUnknownBitIndex));
+
+                <span class="kwrd">if</span> (temp * temp &lt;= num)
+                {
+                    guessForRoot = temp;
+                }
+
+                <span class="kwrd">if</span> (firstUnknownBitIndex == 0)
+                {
+                    <span class="kwrd">return</span> guessForRoot;
+                }
+
+                firstUnknownBitIndex--;
+            }
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">uint</span> countBits(<span class="kwrd">uint</span> num)
+        {
+            <span class="kwrd">uint</span> r = 0;
+
+            <span class="kwrd">while</span> (num != 0)
+            {
+                r++;
+                num &gt;&gt;= 1;
+            }
+
+            <span class="kwrd">return</span> r;
+        }
+    }
+}</pre></body></html>

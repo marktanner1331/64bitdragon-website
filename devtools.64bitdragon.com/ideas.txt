@@ -1,0 +1,22 @@
+json viewer
+	if it crashes, it displays the old json
+hex viewer
+url escaper
+character count
+markov analyzer
+random string generator
+lorem ipsum
+curl request maker
+hex/ascii converter
+string reverse
+array sort
+windows tree command to json
+json to xml
+nmap request generator
+ghostscript command generator
+image magick command generator
+xor encryptor
+markov text generator
+javascript runner
+string joiner
+contact form for bugs and suggestions

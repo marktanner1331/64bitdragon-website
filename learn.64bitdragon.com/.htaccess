@@ -1,0 +1,4 @@
+RewriteEngine On    # Turn on the rewriting engine
+
+RewriteRule    ^\/*articles\/([^\/.]+)\/*$    /exportedhtml/$1.html   [NC,L]
+RewriteRule    ^\/*([^\/.]+)\/*$    /categories/$1.html   [NC,L]

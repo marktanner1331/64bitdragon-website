@@ -1,0 +1,128 @@
+﻿.blobHeading {
+    padding: 10px;
+    background-color: #aabad0;
+}
+
+    .blobHeading > header {
+        font-size: 19px;
+        font-weight: bold;
+        display: inline-block;
+    }
+
+.prerequisiteHeading {
+    padding: 10px;
+    background-color: #dbe2eb;
+}
+
+    .prerequisiteHeading > header {
+        font-size: 19px;
+        font-weight: bold;
+        display: inline-block;
+    }
+
+.showHide {
+    font-size: 14px;
+    font-weight: normal;
+    display: inline-block;
+    float: right;
+    background-color: white;
+    padding: 5px;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.blobSubHeading {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.blobRow {
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+.exampleData {
+    padding-left: 15px;
+    margin: 0;
+}
+
+.equation {
+    font-family: monospace;
+    margin: 0;
+}
+
+.exampleSteps {
+    padding-left: 15px;
+}
+
+    .exampleSteps > li {
+        margin-bottom: 15px;
+    }
+
+.ulBiggerGaps > li {
+    margin-bottom: 15px;
+}
+
+.ulBiggerGaps2 > li {
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.ulBiggerGaps3 > li {
+    margin-bottom: 35px;
+}
+
+.terminology {
+    margin-top: 10px;
+}
+
+    .terminology > div {
+        margin-top: 20px;
+    }
+
+        .terminology > div > p:first-child {
+            margin: 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+.blob {
+    max-width: 768px;
+    margin: 0 0 25px;
+    line-height: 1.42857143;
+    color: #333;
+    border: 1px solid #a2a9b1;
+    border-radius: 4px;
+}
+
+.latex {
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
+    display: inline-block;
+    border: 1px solid #ccc;
+}
+
+.latexFullWidth {
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
+}
+
+code {
+    border: 1px solid #ccc;
+}
+
+.htmlEquation {
+    font-family: "Nimbus Roman No9 L","Times New Roman",Times,serif;
+    font-size: 118%;
+    line-height: 1;
+}
+
+.container .blobRow:last-child {
+    margin-bottom: 0px;
+}

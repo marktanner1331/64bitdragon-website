@@ -1,0 +1,262 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.IO;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> gif_parser
+{
+    <span class="kwrd">class</span> ByteArray
+    {
+        <span class="kwrd">private</span> <span class="kwrd">byte</span>[] _bytes;
+        <span class="kwrd">private</span> MemoryStream _stream;
+
+        <span class="kwrd">public</span> <span class="kwrd">byte</span>[] bytes
+        {
+            get
+            {
+                <span class="kwrd">return</span> _bytes;
+            }
+        }
+
+        <span class="kwrd">public</span> MemoryStream stream
+        {
+            get
+            {
+                <span class="kwrd">return</span> _stream;
+            }
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">long</span> Position
+        {
+            get
+            {
+                <span class="kwrd">return</span> stream.Position;
+            }
+            set
+            {
+                stream.Position = <span class="kwrd">value</span>;
+            }
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">uint</span> Length
+        {
+            get
+            {
+                <span class="kwrd">return</span> (<span class="kwrd">uint</span>)bytes.Length;
+            }
+        }
+
+        <span class="kwrd">public</span> ByteArray(<span class="kwrd">byte</span>[] data)
+        {
+            _bytes = data;
+            
+            _stream = <span class="kwrd">new</span> MemoryStream(_bytes);
+        }
+
+
+        <span class="kwrd">public</span> <span class="kwrd">void</span> skipBytes(<span class="kwrd">uint</span> <span class="kwrd">value</span>)
+        {
+            stream.Position += <span class="kwrd">value</span>;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">byte</span> getByte()
+        {
+            <span class="kwrd">byte</span> b = bytes[Position];
+            Position++;
+            <span class="kwrd">return</span> b;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">int</span> getI8()
+        {
+            <span class="kwrd">byte</span> b = bytes[Position];
+            Position++;
+            <span class="kwrd">return</span> (<span class="kwrd">int</span>)(<span class="kwrd">sbyte</span>)b;
+        }
+        
+        <span class="kwrd">public</span> <span class="kwrd">ushort</span> getUI16()
+        {
+            <span class="kwrd">ushort</span> <span class="kwrd">value</span> = BitConverter.ToUInt16(bytes, (<span class="kwrd">int</span>)stream.Position);
+
+            <span class="rem">//have to increment the stream position manually here because we are </span>
+            <span class="rem">//dealing directory with the byte array</span>
+            stream.Position += 2;
+
+            <span class="kwrd">return</span> <span class="kwrd">value</span>;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">short</span> getI16()
+        {
+            <span class="kwrd">short</span> <span class="kwrd">value</span> = BitConverter.ToInt16(bytes, (<span class="kwrd">int</span>)stream.Position);
+
+            <span class="rem">//have to increment the stream position manually here because we are </span>
+            <span class="rem">//dealing directory with the byte array</span>
+            stream.Position += 2;
+
+            <span class="kwrd">return</span> <span class="kwrd">value</span>;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">uint</span> getUI24()
+        {
+            <span class="kwrd">uint</span> <span class="kwrd">value</span> = BitConverter.ToUInt32(bytes, (<span class="kwrd">int</span>)stream.Position);
+
+            <span class="rem">//have to increment the stream position manually here because we are </span>
+            <span class="rem">//dealing directory with the byte array</span>
+            stream.Position += 3;
+
+            <span class="kwrd">return</span> <span class="kwrd">value</span> &amp; 0xffffff;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">uint</span> getUI32()
+        {
+            <span class="kwrd">uint</span> <span class="kwrd">value</span> = BitConverter.ToUInt32(bytes, (<span class="kwrd">int</span>)stream.Position);
+
+            <span class="rem">//have to increment the stream position manually here because we are </span>
+            <span class="rem">//dealing directory with the byte array</span>
+            stream.Position += 4;
+
+            <span class="kwrd">return</span> <span class="kwrd">value</span>;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">int</span> getI32()
+        {
+            <span class="kwrd">int</span> <span class="kwrd">value</span> = BitConverter.ToInt32(bytes, (<span class="kwrd">int</span>)stream.Position);
+
+            <span class="rem">//have to increment the stream position manually here because we are </span>
+            <span class="rem">//dealing directory with the byte array</span>
+            stream.Position += 4;
+
+            <span class="kwrd">return</span> <span class="kwrd">value</span>;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">string</span> getString(<span class="kwrd">int</span> length)
+        {
+            <span class="kwrd">byte</span>[] text = <span class="kwrd">new</span> <span class="kwrd">byte</span>[length];
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; length; i++)
+            {
+                text[i] = (<span class="kwrd">byte</span>)stream.ReadByte();
+            }
+
+            Encoding iso = Encoding.GetEncoding(<span class="str">"us-ascii"</span>);
+            <span class="kwrd">return</span> iso.GetString(text);
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">string</span> getPascalString()
+        {
+            <span class="kwrd">uint</span> length = getByte();
+            <span class="kwrd">if</span>(length == 0)
+            {
+                skipBytes(1);
+                <span class="kwrd">return</span> <span class="str">""</span>;
+            }
+            
+            String s = getString((<span class="kwrd">int</span>)length);
+            skipBytes(1 - (length % 2));
+            
+            <span class="kwrd">return</span> s;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">string</span> getPascalString(<span class="kwrd">uint</span> padding)
+        {
+            <span class="kwrd">uint</span> length = getByte();
+            <span class="kwrd">if</span>(length == 0)
+            {
+                skipBytes(padding - 1);
+                <span class="kwrd">return</span> <span class="str">""</span>;
+            }
+            
+            String s = getString((<span class="kwrd">int</span>)length);
+            skipBytes((padding - 1) - length % padding);
+            
+            <span class="kwrd">return</span> s;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">byte</span>[] getBytesAsArray(<span class="kwrd">uint</span> count)
+        {
+            <span class="kwrd">byte</span>[] data = <span class="kwrd">new</span> <span class="kwrd">byte</span>[count];
+            Array.Copy(bytes, stream.Position, data, 0, count);
+            skipBytes(count);
+
+            <span class="kwrd">return</span> data;
+        }
+
+        <span class="kwrd">public</span> ByteArray getBytes(<span class="kwrd">uint</span> count)
+        {
+            <span class="kwrd">if</span> (count == 0)
+            {
+                <span class="kwrd">return</span> <span class="kwrd">new</span> ByteArray(<span class="kwrd">new</span> <span class="kwrd">byte</span>[0]);
+            }
+            <span class="kwrd">else</span>
+            {
+                <span class="kwrd">byte</span>[] data = <span class="kwrd">new</span> <span class="kwrd">byte</span>[count];
+                Array.Copy(bytes, stream.Position, data, 0, count);
+
+                skipBytes(count);
+
+                <span class="kwrd">return</span> <span class="kwrd">new</span> ByteArray(data);
+            }
+        }
+        
+        <span class="rem">//takes run length encoded data and decodes it</span>
+        <span class="kwrd">public</span> <span class="kwrd">static</span> <span class="kwrd">byte</span>[] unRLE(ByteArray packed)
+        {
+            <span class="kwrd">int</span> i;
+            <span class="kwrd">int</span> n;
+            <span class="kwrd">byte</span> b;
+            MemoryStream unpacked = <span class="kwrd">new</span> MemoryStream();
+            <span class="kwrd">int</span> count;
+            
+            <span class="kwrd">while</span> (packed.Position &lt; packed.Length) 
+            {
+                n = packed.getI8();
+                
+                <span class="kwrd">if</span> ( n &gt;= 0 ) 
+                {
+                    count = n + 1;
+                    <span class="kwrd">for</span> ( i = 0; i &lt; count; ++i ) 
+                    {
+                        unpacked.WriteByte( packed.getByte() );
+                    }
+                } 
+                <span class="kwrd">else</span> 
+                {
+                    b = packed.getByte();
+                    
+                    count = 1 - n;
+                    <span class="kwrd">for</span> ( i = 0; i &lt; count; ++i ) 
+                    {
+                        unpacked.WriteByte(b);
+                    }
+                }
+            }
+            
+            <span class="kwrd">return</span> unpacked.ToArray();
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">string</span> readComplexString(<span class="kwrd">uint</span> length, <span class="kwrd">string</span> encoding)
+        {
+            <span class="kwrd">byte</span>[] data = getBytesAsArray(length * 2);
+
+            Encoding iso = Encoding.GetEncoding(encoding);
+            <span class="kwrd">return</span> iso.GetString(data);
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">string</span> getUnicodeString()
+        {
+            <span class="kwrd">uint</span> length = getUI32();
+
+            length--; <span class="rem">//for the null bytes at the end</span>
+
+            <span class="kwrd">byte</span>[] data = getBytesAsArray(length * 2);
+
+            skipBytes(2); <span class="rem">//for the null bytes at the end</span>
+
+            Encoding iso = Encoding.GetEncoding(<span class="str">"unicodeFFFE"</span>);
+            <span class="kwrd">return</span> iso.GetString(data);
+        }
+    }
+}
+</pre></body></html>

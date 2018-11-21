@@ -1,0 +1,93 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> marktanner;
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.IO;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> ceasar_cipher
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">private</span> <span class="kwrd">static</span> ByteArray bytes;
+        
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            Boolean encrypt = <span class="kwrd">false</span>;
+            <span class="kwrd">uint</span> offset = 1;
+
+            <span class="kwrd">if</span>(encrypt)
+            {
+                bytes = <span class="kwrd">new</span> ByteArray(Directory.GetCurrentDirectory() + <span class="str">"/test.bmp"</span>);
+                
+                MemoryStream encyptedBytes = <span class="kwrd">new</span> MemoryStream();
+
+                <span class="kwrd">while</span> (bytes.Position &lt; bytes.Length)
+                {
+                    encyptedBytes.WriteByte((<span class="kwrd">byte</span>)addToByte((<span class="kwrd">uint</span>)bytes.getByte(), offset));
+                }
+
+                ByteArrayToFile(Directory.GetCurrentDirectory() + <span class="str">"/test encrypted.bmp"</span>, encyptedBytes.ToArray());
+            }
+            <span class="kwrd">else</span>
+            {
+                bytes = <span class="kwrd">new</span> ByteArray(Directory.GetCurrentDirectory() + <span class="str">"/test encrypted.bmp"</span>);
+
+                MemoryStream decryptedBytes = <span class="kwrd">new</span> MemoryStream();
+
+                <span class="kwrd">while</span> (bytes.Position &lt; bytes.Length)
+                {
+                    decryptedBytes.WriteByte((<span class="kwrd">byte</span>)subtractFromByte((<span class="kwrd">uint</span>)bytes.getByte(), offset));
+                }
+
+                ByteArrayToFile(Directory.GetCurrentDirectory() + <span class="str">"/test decrypted.bmp"</span>, decryptedBytes.ToArray());
+            }
+
+            Console.Read();
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">static</span> <span class="kwrd">void</span> ByteArrayToFile(<span class="kwrd">string</span> _FileName, <span class="kwrd">byte</span>[] _ByteArray)
+        {
+            <span class="kwrd">try</span>
+            {
+                <span class="rem">// Open file for reading</span>
+                FileStream _FileStream = <span class="kwrd">new</span> FileStream(_FileName, FileMode.Create, FileAccess.Write);
+                <span class="rem">// Writes a block of bytes to this stream using data from</span>
+                <span class="rem">// a byte array.</span>
+                _FileStream.Write(_ByteArray, 0, _ByteArray.Length);
+
+                <span class="rem">// close file stream</span>
+                _FileStream.Close();
+            }
+            <span class="kwrd">catch</span> (Exception _Exception)
+            {
+                <span class="rem">// Error</span>
+                Console.WriteLine(<span class="str">"Exception caught in process: {0}"</span>, _Exception.ToString());
+            }
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">static</span> <span class="kwrd">uint</span> subtractFromByte(<span class="kwrd">uint</span> b, <span class="kwrd">uint</span> amount)
+        {
+            <span class="kwrd">if</span> (b &gt;= amount)
+            {
+                <span class="kwrd">return</span> b - amount;
+            }
+            <span class="kwrd">else</span>
+            {
+                <span class="kwrd">return</span> 255 - (amount - b);
+            }
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">static</span> <span class="kwrd">uint</span> addToByte(<span class="kwrd">uint</span> b, <span class="kwrd">uint</span> amount)
+        {
+            b += amount;
+
+            b %= 256;
+            
+            <span class="kwrd">return</span> b;
+        }
+    }
+}
+</pre></body></html>

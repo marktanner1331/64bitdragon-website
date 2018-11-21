@@ -1,0 +1,226 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Diagnostics;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> Xor_cryptanalysis
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            <span class="kwrd">string</span> plaintext = getPlaintext();
+            Console.WriteLine(plaintext);
+
+            Console.WriteLine();
+
+            <span class="kwrd">byte</span>[] key = getRandomKey();
+
+            <span class="kwrd">string</span> cipherText = encrypt(plaintext, key);
+            
+            Console.WriteLine(cipherText);
+
+            Console.WriteLine();
+
+            plaintext = crack(cipherText);
+
+            Console.WriteLine(plaintext);
+
+            Console.Read();
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">string</span> crack(<span class="kwrd">string</span> cipherText)
+        {
+            <span class="kwrd">byte</span>[] bytes = Encoding.ASCII.GetBytes(cipherText);
+            bytes = crack(bytes);
+
+            <span class="kwrd">return</span> Encoding.ASCII.GetString(bytes);
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">byte</span>[] crack(<span class="kwrd">byte</span>[] cipherText)
+        {
+            <span class="kwrd">int</span> keyLength = getLengthOfKey(cipherText);
+            <span class="kwrd">byte</span>[] key = <span class="kwrd">new</span> <span class="kwrd">byte</span>[keyLength];
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; keyLength; i++)
+            {
+                key[i] = getByteOfKey(cipherText, keyLength, i);
+            }
+
+            <span class="kwrd">return</span> decrypt(cipherText, key);
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">byte</span> getByteOfKey(<span class="kwrd">byte</span>[] cipherText, <span class="kwrd">int</span> keyLength, <span class="kwrd">int</span> byteOfKeyIndex)
+        {
+            Dictionary&lt;<span class="kwrd">byte</span>, <span class="kwrd">int</span>&gt; dict = <span class="kwrd">new</span> Dictionary&lt;<span class="kwrd">byte</span>, <span class="kwrd">int</span>&gt;();
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = byteOfKeyIndex; i &lt; cipherText.Length; i += keyLength)
+            {
+                <span class="kwrd">if</span> (dict.ContainsKey(cipherText[i]) == <span class="kwrd">false</span>)
+                {
+                    dict.Add(cipherText[i], 1);
+                }
+                <span class="kwrd">else</span>
+                {
+                    dict[cipherText[i]]++;
+                }
+            }
+
+            <span class="kwrd">int</span> maxValue = 0;
+            <span class="kwrd">byte</span> byteForMaxValue = 0;
+            <span class="kwrd">foreach</span> (KeyValuePair&lt;<span class="kwrd">byte</span>, <span class="kwrd">int</span>&gt; pair <span class="kwrd">in</span> dict)
+            {
+                <span class="kwrd">if</span> (pair.Value &gt; maxValue)
+                {
+                    maxValue = pair.Value;
+                    byteForMaxValue = pair.Key;
+                }
+            }
+
+            <span class="rem">//hint: space is the most common character in english</span>
+            <span class="kwrd">byte</span> keyByte = (<span class="kwrd">byte</span>)(0x20 ^ byteForMaxValue);
+
+            <span class="kwrd">return</span> keyByte;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">int</span> getLengthOfKey(<span class="kwrd">byte</span>[] cipherText)
+        {
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> keyLength = 1; keyLength &lt; cipherText.Length; keyLength++)
+            {
+                <span class="kwrd">byte</span>[] shiftedBytes = shiftBytesRight(cipherText, keyLength);
+
+                <span class="kwrd">byte</span>[] xoredBytes = xorBytes(cipherText, shiftedBytes);
+
+                <span class="kwrd">int</span> numEqual = numEqualBytes(xoredBytes);
+
+                <span class="kwrd">double</span> percent = (<span class="kwrd">double</span>)numEqual / cipherText.Length;
+
+                <span class="kwrd">if</span> (percent &gt; 0.06)
+                {
+                    <span class="kwrd">return</span> keyLength;
+                }
+            }
+
+            <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"unable to break"</span>);
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">byte</span>[] xorBytes(<span class="kwrd">byte</span>[] a, <span class="kwrd">byte</span>[] b)
+        {
+            <span class="kwrd">if</span> (a.Length != b.Length)
+            {
+                <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"byte arrays must of the same length"</span>);
+            }
+
+            <span class="kwrd">byte</span>[] c = <span class="kwrd">new</span> <span class="kwrd">byte</span>[a.Length];
+
+            <span class="kwrd">for</span>(<span class="kwrd">int</span> i = 0;i &lt; a.Length;i++)
+            {
+                c[i] = (<span class="kwrd">byte</span>)(a[i] ^ b[i]);
+            }
+
+            <span class="kwrd">return</span> c;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">byte</span>[] shiftBytesRight(<span class="kwrd">byte</span>[] bytes, <span class="kwrd">int</span> amount)
+        {
+            <span class="kwrd">byte</span>[] shiftedBytes = <span class="kwrd">new</span> <span class="kwrd">byte</span>[bytes.Length];
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; bytes.Length; i++)
+            {
+                shiftedBytes[(i + amount) % bytes.Length] = bytes[i];
+            }
+
+            <span class="kwrd">return</span> shiftedBytes;
+        }
+
+        <span class="rem">/// &lt;summary&gt;</span>
+        <span class="rem">/// given a byte array, this method returns the largest amount of equal bytes</span>
+        <span class="rem">/// &lt;/summary&gt;</span>
+        <span class="kwrd">static</span> <span class="kwrd">int</span> numEqualBytes(<span class="kwrd">byte</span>[] bytes)
+        {
+            Dictionary&lt;<span class="kwrd">byte</span>, <span class="kwrd">int</span>&gt; dict = <span class="kwrd">new</span> Dictionary&lt;<span class="kwrd">byte</span>, <span class="kwrd">int</span>&gt;();
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; bytes.Length; i++)
+            {
+                <span class="kwrd">if</span> (dict.ContainsKey(bytes[i]) == <span class="kwrd">false</span>)
+                {
+                    dict.Add(bytes[i], 1);
+                }
+                <span class="kwrd">else</span>
+                {
+                    dict[bytes[i]]++;
+                }
+            }
+
+            <span class="kwrd">int</span> maxEqual = 0;
+
+            <span class="kwrd">foreach</span> (KeyValuePair&lt;<span class="kwrd">byte</span>, <span class="kwrd">int</span>&gt; pair <span class="kwrd">in</span> dict)
+            {
+                maxEqual = Math.Max(maxEqual, pair.Value);
+            }
+
+            <span class="kwrd">return</span> maxEqual;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">byte</span>[] getRandomKey()
+        {
+            Random random = <span class="kwrd">new</span> Random();
+            <span class="kwrd">int</span> keyLength = random.Next(4, 16);
+
+            <span class="kwrd">byte</span>[] key = <span class="kwrd">new</span> <span class="kwrd">byte</span>[keyLength];
+
+            random.NextBytes(key);
+
+            <span class="rem">//setting the most significant bit to 0 will mean the cipher text will be valid ascii</span>
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; key.Length; i++)
+            {
+                key[i] = (<span class="kwrd">byte</span>)(key[i] &amp; 127);
+            }
+
+            <span class="kwrd">return</span> key;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">string</span> encrypt(<span class="kwrd">string</span> plaintext, <span class="kwrd">byte</span>[] key)
+        {
+            <span class="kwrd">byte</span>[] bytes = Encoding.ASCII.GetBytes(plaintext);
+            bytes = encrypt(bytes, key);
+
+            <span class="kwrd">return</span> Encoding.ASCII.GetString(bytes);
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">byte</span>[] encrypt(<span class="kwrd">byte</span>[] plaintext, <span class="kwrd">byte</span>[] key)
+        {
+            <span class="kwrd">byte</span>[] output = <span class="kwrd">new</span> <span class="kwrd">byte</span>[plaintext.Length];
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; plaintext.Length; i++)
+            {
+                output[i] = (<span class="kwrd">byte</span>)(plaintext[i] ^ key[i % key.Length]);
+            }
+
+            <span class="kwrd">return</span> output;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">byte</span>[] decrypt(<span class="kwrd">byte</span>[] cipherText, <span class="kwrd">byte</span>[] key)
+        {
+            <span class="kwrd">byte</span>[] output = <span class="kwrd">new</span> <span class="kwrd">byte</span>[cipherText.Length];
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; cipherText.Length; i++)
+            {
+                output[i] = (<span class="kwrd">byte</span>)(cipherText[i] ^ key[i % key.Length]);
+            }
+
+            <span class="kwrd">return</span> output;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">string</span> getPlaintext()
+        {
+            <span class="kwrd">return</span> <span class="str">@"Star Wars is an American epic space opera franchise centered on a film series created by George Lucas. The franchise depicts a galaxy described as far, far away in the distant past, and portrays Jedi as a representation of good, in conflict with the Sith, their evil counterpart. Their weapon of choice, the lightsaber, is commonly recognized in popular culture. The franchise's storylines contain many themes, with influences from philosophy and religion.
+                    The first film in the series, Star Wars, was released on May 25, 1977 by 20th Century Fox, and became a worldwide pop culture phenomenon. It was followed by two sequels, released in 1980 and 1983. A prequel trilogy of films were later released between 1999 and 2005. Reaction to the original trilogy was largely positive, while the prequel trilogy received a more mixed reaction from critics and fans. All six films were nominated for or won Academy Awards, and all were box office successes; the overall box office revenue generated totals $4.38 billion, making Star Wars the fifth-highest-grossing film series. The series has spawned an extensive media franchise – the Expanded Universe – including books, television series, computer and video games, and comic books, resulting in significant development of the series's fictional universe.
+                    In 2012, The Walt Disney Company acquired Lucasfilm for $4.05 billion and announced three new Star Wars films, with the first film, Star Wars: The Force Awakens, planned for release in 2015. 20th Century Fox retains the physical distribution rights to the first two Star Wars trilogies, owning permanent rights for the original film Episode IV: A New Hope and holding the rights to Episodes I–III, V and VI until May 2020. The Walt Disney Studios owns digital distribution rights to all the Star Wars films, excluding A New Hope. Star Wars also holds a Guinness World Records title for the Most successful film merchandising franchise. As of 2012, the total value of the Star Wars franchise was estimated at £19.51 billion ($30.7 billion), including box-office receipts as well as profits from their video games and DVD sales."</span>;
+        }
+    }
+}
+</pre></body></html>

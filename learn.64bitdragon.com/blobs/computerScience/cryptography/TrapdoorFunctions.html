@@ -1,0 +1,69 @@
+﻿<div class="container" style="width:100%">
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Introduction</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    Trapdoor functions are very similiar to one-way functions in that their inverse is computationally infeasible.
+                </li>
+                <li>
+                    However they have an additional property such that they contain a trapdoor.
+                </li>
+                <li>
+                    A trapdoor is an extra piece of information which makes it easy to invert the function.
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Example</div>
+            <ul class="ulBiggerGaps">
+                <li>
+                    A common one-way function is semi-prime factorization:
+                    <div style="width:100%;text-align:center;margin-bottom:10px;">
+                        <img style="padding:10px 0 10px 10px" src="/images/cryptography/trapdoor functions.svg" />
+                    </div>
+                </li>
+                <li>
+                    Given <span class="htmlEquation"><i>x<sub>1</sub></i></span> and <span class="htmlEquation"><i>x<sub>2</sub></i></span> it is easy to find <span class="htmlEquation"><i>y</i></span> (you can just multiply them together).
+                </li>
+                <li>
+                    However given only <span class="htmlEquation"><i>y</i></span>, it becomes computationally infeasible to find <span class="htmlEquation"><i>x<sub>1</sub></i></span> and <span class="htmlEquation"><i>x<sub>2</sub></i></span>, especially if they are very large.
+                </li>
+                <li>
+                    The trapdoor in this function is when you know one of the values of <span class="htmlEquation"><i>X</i></span>. For example: if you know that <span class="htmlEquation"><i>x<sub>1</sub></i></span> is always equal to 23:
+                    <div style="width:100%;text-align:center;margin-bottom:10px;">
+                        <img style="padding:10px 0 10px 10px" src="/images/cryptography/trapdoor functions 2.svg" />
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="row blobRow">
+        <section>
+            <div class="blobSubHeading">Code</div>
+            <pre>
+def f(_x1, _x2):
+    return _x1 * _x2
+
+
+def g(_y, _x1):
+    return _x1, _y // x1
+
+
+x1, x2 = 7, 13
+
+y = f(x1, x2)
+print("The image of " + str((x1, x2)) + " is " + str(y))  # prints: The image of (7, 13) is 91
+
+x1 = 7
+y = 91
+
+x1, x2 = g(y, x1)
+print("The preimage of " + str(y) + " is " + str((x1, x2)))  # prints: The preimage of 91 is (7, 13)
+</pre>
+        </section>
+    </div>
+</div>
+</div>

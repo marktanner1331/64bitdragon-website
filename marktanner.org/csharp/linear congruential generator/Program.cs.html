@@ -1,0 +1,25 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> linear_congruential_generator
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            Generator gen = <span class="kwrd">new</span> Generator(100);
+
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> i = 0; i &lt; 10; i++)
+            {
+                Console.WriteLine(gen.next());
+            }
+
+            Console.Read();
+        }
+    }
+}
+</pre></body></html>

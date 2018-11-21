@@ -1,0 +1,38 @@
+\documentclass[11pt,fleqn,a4paper]{article}
+
+\usepackage[a4paper,bottom=0cm]{geometry}
+\usepackage{url}
+\usepackage{amsmath}
+\setlength{\voffset}{-0.75in}
+\setlength{\headsep}{5pt}
+
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\mainEquation}{\( \sum\limits_{i=1}^{n} i = \half n(n+1) \quad 1 \leq n < \infty  \)}
+
+\begin{document}
+\title{Proof that \mainEquation}
+\date{}
+\maketitle
+
+\section{Introduction}
+\[ S \text{ is a set such that } n \in S \text{ if } \sum\limits_{i=1}^{n} i = \half n(n+1) \]
+\[ \text{By proving that } n \in S \text{ for } i \leq n < \infty \]
+ \[ \text{it will prove that \mainEquation } \]
+
+\section{The Induction Axiom}
+The fifth of Peano's axioms, which states: If a set \(S\) of numbers contains zero and also the successor of every number in \(S\), then every number is in \(S\). \footnote{from \url{http://mathworld.wolfram.com/InductionAxiom.html}}
+
+Zero refers to the first element of the set, which in this case is 1. 
+
+\section{Proof that \(1 \in S \)}
+\[ \sum\limits_{i=1}^{1}i = 1 \]
+\[ \half (1)(1 + 1) = 1 \]
+
+\section{Proof that if \(n \in S \) then \( n + 1 \in S \)}
+\[ \sum\limits_{i=1}^{n + 1}i = \left(\sum\limits_{i=1}^{n}i\right) + n + 1 \]
+\[ f:\rightarrow f(n) = \half n(n+1) \]
+\[ f(n + 1) = f(n) + n + 1\]
+\[ \half (n + 1)(n + 1 + 1) = \half n(n + 1) + n + 1 \]
+\[  \half (n^2 + 3n + 2) = \half (n^2 + n) + n + 1) \]
+\[ \frac{n^2}{2} + \frac{3n}{2} + 1 = \frac{n^2}{2} + \frac{n}{2} + n + 1 \]
+\end{document}

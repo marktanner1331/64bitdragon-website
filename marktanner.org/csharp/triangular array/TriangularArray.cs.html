@@ -1,0 +1,69 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> triangular_array
+{
+    <span class="kwrd">class</span> TriangularArray &lt;T&gt;
+    {
+        <span class="kwrd">private</span> <span class="kwrd">int</span> height;
+        <span class="kwrd">private</span> T[] elements;
+
+        <span class="kwrd">public</span> TriangularArray(<span class="kwrd">int</span> height)
+        {
+            <span class="kwrd">this</span>.height = height;
+            elements = <span class="kwrd">new</span> T[getTriangleNumber(height)];
+        }
+
+        <span class="kwrd">public</span> T getElementAt(<span class="kwrd">int</span> row, <span class="kwrd">int</span> column)
+        {
+            <span class="kwrd">if</span> (row &lt; column)
+            {
+                <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"the row must be greater or equal to the column"</span>);
+            }
+
+            <span class="kwrd">return</span> elements[rowAndColumnToIndex(row, column)];
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">void</span> setElementAt(<span class="kwrd">int</span> row, <span class="kwrd">int</span> column, T <span class="kwrd">value</span>)
+        {
+            <span class="kwrd">if</span> (row &lt; column)
+            {
+                <span class="kwrd">throw</span> <span class="kwrd">new</span> Exception(<span class="str">"the row must be greater or equal to the column"</span>);
+            }
+
+            elements[rowAndColumnToIndex(row, column)] = <span class="kwrd">value</span>;
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">static</span> <span class="kwrd">int</span> rowAndColumnToIndex(<span class="kwrd">int</span> row, <span class="kwrd">int</span> column)
+        {
+            <span class="rem">//remember rows and columns are 0 based</span>
+            <span class="kwrd">return</span> getTriangleNumber(row) + column;
+        }
+
+        <span class="kwrd">private</span> <span class="kwrd">static</span> <span class="kwrd">int</span> getTriangleNumber(<span class="kwrd">int</span> n)
+        {
+            <span class="kwrd">return</span> n * (n + 1) / 2;
+        }
+
+        <span class="kwrd">public</span> <span class="kwrd">override</span> <span class="kwrd">string</span> ToString()
+        {
+            StringBuilder sb = <span class="kwrd">new</span> StringBuilder();
+            <span class="kwrd">int</span> i = 0;
+            <span class="kwrd">for</span> (<span class="kwrd">int</span> k = 0; k &lt; height; k++)
+            {
+                <span class="kwrd">for</span>(<span class="kwrd">int</span> j = 0;j &lt; k;j++, i++)
+                {
+                    sb.Append(elements[i]);
+                    sb.Append(j &lt; k - 1 ? <span class="str">", "</span> : k &lt; height - 1 ? <span class="str">"\n"</span> : <span class="str">""</span>);
+                }
+            }
+
+            <span class="kwrd">return</span> sb.ToString();
+        }
+    }
+}
+</pre></body></html>

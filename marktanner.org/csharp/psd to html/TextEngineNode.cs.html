@@ -1,0 +1,46 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+
+<span class="kwrd">namespace</span> psd_importer
+{
+    <span class="kwrd">class</span> TextEngineNode
+    {
+        <span class="kwrd">public</span> <span class="kwrd">const</span> String TYPE_VALUE = <span class="str">"type value"</span>;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> String TYPE_STRUCTURE = <span class="str">"type structure"</span>;
+        
+        <span class="kwrd">public</span> <span class="kwrd">string</span> type;
+        <span class="kwrd">public</span> <span class="kwrd">string</span> key;
+        <span class="kwrd">public</span> <span class="kwrd">string</span> <span class="kwrd">value</span>;
+        <span class="kwrd">public</span> List&lt;TextEngineNode&gt; structure = <span class="kwrd">new</span> List&lt;TextEngineNode&gt;();
+
+        <span class="kwrd">public</span> TextEngineNode getNodeByKey(String key)
+        {
+            <span class="kwrd">return</span> structure.First(node =&gt; node.key == key);
+        }
+
+        <span class="rem">//returns a node that is nested somewhere inside this node, the path to the nested node</span>
+        <span class="rem">//is described by a series of node names giben in 'keys'</span>
+        <span class="kwrd">public</span> TextEngineNode getNestedNodeByKey(String[] keys)
+        {
+            TextEngineNode tempNode = <span class="kwrd">this</span>;
+
+            <span class="kwrd">foreach</span> (<span class="kwrd">string</span> key <span class="kwrd">in</span> keys)
+            {
+                <span class="kwrd">if</span> (tempNode == <span class="kwrd">null</span>)
+                {
+                    <span class="kwrd">return</span> <span class="kwrd">null</span>;
+                }
+                <span class="kwrd">else</span>
+                {
+                    tempNode = tempNode.getNodeByKey(key);
+                }
+            }
+
+            <span class="kwrd">return</span> tempNode;
+        }
+    }
+}
+</pre></body></html>

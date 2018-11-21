@@ -1,0 +1,47 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> psd_importer
+{
+    <span class="kwrd">class</span> ColorModeEnum
+    {
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">ushort</span> BITMAP = 0;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">ushort</span> GRAYSCALE = 1;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">ushort</span> INDEXED = 2;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">ushort</span> RGB = 3;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">ushort</span> CYMK = 4;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">ushort</span> MULTI_CHANNEL = 5;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">ushort</span> DUOTONE = 6;
+        <span class="kwrd">public</span> <span class="kwrd">const</span> <span class="kwrd">ushort</span> LAB = 7;
+
+        <span class="kwrd">public</span> <span class="kwrd">static</span> <span class="kwrd">string</span> getName(<span class="kwrd">ushort</span> <span class="kwrd">value</span>)
+        {
+            <span class="kwrd">switch</span>(<span class="kwrd">value</span>)
+            {
+                <span class="kwrd">case</span> BITMAP:
+                    <span class="kwrd">return</span> <span class="str">"Bitmap"</span>;
+                <span class="kwrd">case</span> GRAYSCALE:
+                    <span class="kwrd">return</span> <span class="str">"Grayscale"</span>;
+                <span class="kwrd">case</span> INDEXED:
+                    <span class="kwrd">return</span> <span class="str">"Indexed"</span>;
+                <span class="kwrd">case</span> RGB:
+                    <span class="kwrd">return</span> <span class="str">"RGB"</span>;
+                <span class="kwrd">case</span> CYMK:
+                    <span class="kwrd">return</span> <span class="str">"CYMK"</span>;
+                <span class="kwrd">case</span> MULTI_CHANNEL:
+                    <span class="kwrd">return</span> <span class="str">"Multi Channel"</span>;
+                <span class="kwrd">case</span> DUOTONE:
+                    <span class="kwrd">return</span> <span class="str">"Duotone"</span>;
+                <span class="kwrd">case</span> LAB:
+                    <span class="kwrd">return</span> <span class="str">"Lab"</span>;
+                <span class="kwrd">default</span>:
+                    <span class="kwrd">return</span> <span class="kwrd">null</span>;
+            }
+        }
+    }
+}
+</pre></body></html>

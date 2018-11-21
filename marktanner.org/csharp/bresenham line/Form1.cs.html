@@ -1,0 +1,64 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.ComponentModel;
+<span class="kwrd">using</span> System.Data;
+<span class="kwrd">using</span> System.Drawing;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+<span class="kwrd">using</span> System.Windows.Forms;
+
+<span class="kwrd">namespace</span> bresenham_line
+{
+    <span class="rem">/// &lt;summary&gt;</span>
+    <span class="rem">/// drawing lines is more complicated than it first appears, </span>
+    <span class="rem">/// if the line is hoverring on a pixel boundary, deciding which pixel it should fill is difficult without</span>
+    <span class="rem">/// resorting to floating point numbers</span>
+    <span class="rem">/// &lt;/summary&gt;</span>
+    <span class="kwrd">public</span> <span class="kwrd">partial</span> <span class="kwrd">class</span> Form1 : Form
+    {
+        <span class="kwrd">public</span> Form1()
+        {
+            InitializeComponent();
+
+            Bitmap b = <span class="kwrd">new</span> Bitmap(1000, 700);
+            drawBresenhamLine(b, <span class="kwrd">new</span> Point(0, 0), <span class="kwrd">new</span> Point(1000 - 1, 700 - 1));
+
+            pictureBox1.Image = b;
+        }
+
+        <span class="kwrd">static</span> <span class="kwrd">void</span> drawBresenhamLine(Bitmap image, Point start, Point end)
+        {
+            <span class="kwrd">int</span> deltaX = Math.Abs(end.X - start.X);
+            <span class="kwrd">int</span> deltaY = Math.Abs(end.Y - start.Y);
+
+            <span class="kwrd">int</span> sx = start.X &lt; end.X ? 1 : -1;
+            <span class="kwrd">int</span> sy = start.Y &lt; end.Y ? 1 : -1;
+
+            <span class="kwrd">int</span> error = deltaX - deltaY;
+
+            <span class="kwrd">while</span> (<span class="kwrd">true</span>)
+            {
+                image.SetPixel(start.X, start.Y, Color.Black);
+
+                <span class="kwrd">if</span> (start.X == end.X &amp;&amp; start.Y == end.Y)
+                    <span class="kwrd">break</span>;
+
+                <span class="kwrd">int</span> e2 = 2 * error;
+                <span class="kwrd">if</span> (e2 &gt; -deltaY)
+                {
+                    error -= deltaY;
+                    start.X += sx;
+                }
+
+                <span class="kwrd">if</span> (e2 &lt; deltaX)
+                {
+                    error += deltaX;
+                    start.Y += sy;
+                }
+            }
+        }
+    }
+}
+</pre></body></html>

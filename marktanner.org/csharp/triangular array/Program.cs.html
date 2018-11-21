@@ -1,0 +1,23 @@
+<html><head><link rel="stylesheet" type="text/css" href="/csharp.css"></head><body><pre class="csharpcode">
+<span class="kwrd">using</span> System;
+<span class="kwrd">using</span> System.Collections.Generic;
+<span class="kwrd">using</span> System.Linq;
+<span class="kwrd">using</span> System.Text;
+<span class="kwrd">using</span> System.Threading.Tasks;
+
+<span class="kwrd">namespace</span> triangular_array
+{
+    <span class="kwrd">class</span> Program
+    {
+        <span class="kwrd">static</span> <span class="kwrd">void</span> Main(<span class="kwrd">string</span>[] args)
+        {
+            TriangularArray&lt;<span class="kwrd">int</span>&gt; arr = <span class="kwrd">new</span> TriangularArray&lt;<span class="kwrd">int</span>&gt;(5);
+
+            arr.setElementAt(2, 2, 1);
+
+            Console.WriteLine(arr);
+            Console.Read();
+        }
+    }
+}
+</pre></body></html>
